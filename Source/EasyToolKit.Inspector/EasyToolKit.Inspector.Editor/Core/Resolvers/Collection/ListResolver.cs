@@ -34,7 +34,7 @@ namespace EasyToolKit.Inspector.Editor
 
             info = InspectorPropertyInfo.CreateForValue(
                 ElementType,
-                $"Index {childIndex}",  //TODO use unity property name
+                $"[{childIndex}]",
                 new GenericValueAccessor<IList<TElement>, TElement>(
                     (list) => list[childIndex],
                     (list, value) => list[childIndex] = value

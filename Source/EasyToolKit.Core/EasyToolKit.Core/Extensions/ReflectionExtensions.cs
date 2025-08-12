@@ -4,19 +4,21 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using EasyToolKit.ThirdParty.OdinSerializer.Utilities;
+using JetBrains.Annotations;
 
 namespace EasyToolKit.Core
 {
     public static class ReflectionExtensions
     {
-        public static bool HasCustomAttribute<T>(this MemberInfo member) where T : Attribute
+        public static bool IsDefined<T>(this MemberInfo member) where T : Attribute
         {
-            return member.GetCustomAttributes<T>().Any();
+            return member.IsDefined(typeof(T));
         }
 
-        public static bool HasCustomAttribute<T>(this MemberInfo member, bool inherit) where T : Attribute
+        public static bool IsDefined<T>(this MemberInfo member, bool inherit) where T : Attribute
         {
-            return member.GetCustomAttributes<T>(inherit).Any();
+            return member.IsDefined(typeof(T), inherit);
         }
 
         public static IEnumerable<Type> GetAllTypes(this IEnumerable<Assembly> assemblies)
@@ -33,24 +35,6 @@ namespace EasyToolKit.Core
         {
             return assemblies.GetAllTypes().FirstOrDefault(t => t.FullName == fullName);
         }
-
-        public static Delegate CreateDelegate(this MethodInfo method, object target)
-        {
-            var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
-
-            Type funcType;
-            if (method.ReturnType == typeof(void))
-            {
-                funcType = Expression.GetActionType(parameterTypes);
-            }
-            else
-            {
-                funcType = Expression.GetFuncType(parameterTypes.Concat(new[] { method.ReturnType }).ToArray());
-            }
-
-            return Delegate.CreateDelegate(funcType, target, method);
-        }
-
 
         public static string GetSignature(this MemberInfo member)
         {
@@ -102,40 +86,6 @@ namespace EasyToolKit.Core
                 method.GetParameters().Select(x => $"{TypeExtensions.GetAliases(x.ParameterType)} {x.Name}"));
         }
 
-        // public static object GetObjectValue(this object obj, string name, BindingFlags flags)
-        // {
-        //     var t = obj.GetType();
-        //     var f = t.GetField(name, flags);
-        //     if (f != null)
-        //     {
-        //         return f.GetValue(obj);
-        //     }
-        //     var p = t.GetProperty(name, flags);
-        //     if (p != null)
-        //     {
-        //         return p.GetValue(obj);
-        //     }
-        //
-        //     throw new ArgumentException($"No field or property name:{name}");
-        // }
-        //
-        // public static Type GetObjectValueType(this object obj, string name, BindingFlags flags)
-        // {
-        //     var t = obj.GetType();
-        //     var f = t.GetField(name, flags);
-        //     if (f != null)
-        //     {
-        //         return f.FieldType;
-        //     }
-        //     var p = t.GetProperty(name, flags);
-        //     if (p != null)
-        //     {
-        //         return p.PropertyType;
-        //     }
-        //
-        //     throw new ArgumentException($"No field or property name:{name}");
-        // }
-
         public static Type GetMemberType(this MemberInfo member)
         {
             if (member is FieldInfo field)
@@ -156,50 +106,168 @@ namespace EasyToolKit.Core
             throw new NotSupportedException();
         }
 
-        public static object GetMemberValue(this MemberInfo member, object obj)
+        public static Func<object> GetStaticMemberValueGetter(this MemberInfo memberInfo)
         {
-            if (member is FieldInfo field)
-                return field.GetValue(obj);
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateWeakStaticFieldGetter(fieldInfo);
+            }
 
-            return member is PropertyInfo property
-                ? property.GetGetMethod(true).Invoke(obj, null)
-                : throw new ArgumentException($"Can't get the value of '{member.DeclaringType}.{member.Name}'");
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                var getMethodInfo = propertyInfo.GetGetMethod(true) ?? throw new ArgumentException($"Property '{memberInfo.DeclaringType}.{memberInfo.Name}' has no getter");
+                return (Func<object>)getMethodInfo.CreateDelegate(typeof(Func<object>));
+            }
+
+            if (memberInfo is MethodInfo methodInfo)
+            {
+                return (Func<object>)methodInfo.CreateDelegate(typeof(Func<object>));
+            }
+
+            throw new NotSupportedException($"Can't get static member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static void SetMemberValue(this MemberInfo member, object obj, object value)
+        public static Action<object> GetStaticMemberValueSetter(this MemberInfo memberInfo)
         {
-            if (member is FieldInfo field)
+            if (memberInfo is FieldInfo fieldInfo)
             {
-                field.SetValue(obj, value);
+                return EmitUtilities.CreateWeakStaticFieldSetter(fieldInfo);
             }
-            else
+
+            if (memberInfo is PropertyInfo propertyInfo)
             {
-                var methodInfo = member is PropertyInfo property
-                    ? property.GetSetMethod(true)
-                    : throw new ArgumentException($"Can't set the value of '{member.DeclaringType}.{member.Name}'");
-
-                if (methodInfo == null)
-                    throw new ArgumentException($"Property '{member.DeclaringType}.{member.Name}' has no setter");
-
-                methodInfo.Invoke(obj, new[] { value });
+                var setMethodInfo = propertyInfo.GetSetMethod(true) ?? throw new ArgumentException($"Property '{memberInfo.DeclaringType}.{memberInfo.Name}' has no setter");
+                return (Action<object>)setMethodInfo.CreateDelegate(typeof(Action<object>));
             }
+
+            throw new NotSupportedException($"Can't get static member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        // public static void SetObjectValue(this object obj, string name, object val, BindingFlags flags)
-        // {
-        //     var t = obj.GetType();
-        //     var f = t.GetField(name, flags);
-        //     if (f != null)
-        //     {
-        //         f.SetValue(obj, val);
-        //     }
-        //     var p = t.GetProperty(name, flags);
-        //     if (p != null)
-        //     {
-        //         p.SetValue(obj, val);
-        //     }
-        //
-        //     throw new ArgumentException($"No field or property name:{name}");
-        // }
+        public static WeakValueGetter GetInstanceMemberValueGetter(this MemberInfo memberInfo, Type instanceType)
+        {
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateWeakInstanceFieldGetter(instanceType, fieldInfo);
+            }
+
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                return EmitUtilities.CreateWeakInstancePropertyGetter(instanceType, propertyInfo);
+            }
+
+            if (memberInfo is MethodInfo methodInfo)
+            {
+                var getter = (Func<object, object>)methodInfo.CreateDelegate(typeof(Func<object, object>));
+                return (ref object instance) => getter(instance);
+            }
+
+            throw new NotSupportedException($"Can't get instance member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
+        }
+
+        public static WeakValueSetter GetInstanceMemberValueSetter(this MemberInfo memberInfo, Type instanceType)
+        {
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateWeakInstanceFieldSetter(instanceType, fieldInfo);
+            }
+
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                return EmitUtilities.CreateWeakInstancePropertySetter(instanceType, propertyInfo);
+            }
+
+            throw new NotSupportedException($"Can't get instance member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
+        }
+
+        public static Func<T> GetStaticMemberValueGetter<T>(this MemberInfo memberInfo)
+        {
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateStaticFieldGetter<T>(fieldInfo);
+            }
+
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                return EmitUtilities.CreateStaticPropertyGetter<T>(propertyInfo);
+            }
+
+            if (memberInfo is MethodInfo methodInfo)
+            {
+                return (Func<T>)methodInfo.CreateDelegate(typeof(Func<T>));
+            }
+
+            throw new NotSupportedException($"Can't get instance member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
+        }
+
+        public static Action<T> GetStaticMemberValueSetter<T>(this MemberInfo memberInfo)
+        {
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateStaticFieldSetter<T>(fieldInfo);
+            }
+
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                return EmitUtilities.CreateStaticPropertySetter<T>(propertyInfo);
+            }
+
+            throw new NotSupportedException($"Can't get instance member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
+        }
+
+        public static ValueGetter<TInstance, TValue> GetInstanceMemberValueGetter<TInstance, TValue>(this MemberInfo memberInfo)
+        {
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateInstanceFieldGetter<TInstance, TValue>(fieldInfo);
+            }
+
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                return EmitUtilities.CreateInstancePropertyGetter<TInstance, TValue>(propertyInfo);
+            }
+
+            if (memberInfo is MethodInfo methodInfo)
+            {
+                var func = (Func<TInstance, TValue>)methodInfo.CreateDelegate(typeof(Func<TInstance, TValue>));
+                return (ref TInstance instance) => func(instance);
+            }
+
+            throw new NotSupportedException($"Can't get instance member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
+        }
+
+        public static ValueSetter<TInstance, TValue> GetInstanceMemberValueSetter<TInstance, TValue>(this MemberInfo memberInfo)
+        {
+            if (memberInfo is FieldInfo fieldInfo)
+            {
+                return EmitUtilities.CreateInstanceFieldSetter<TInstance, TValue>(fieldInfo);
+            }
+
+            if (memberInfo is PropertyInfo propertyInfo)
+            {
+                return EmitUtilities.CreateInstancePropertySetter<TInstance, TValue>(propertyInfo);
+            }
+
+            throw new NotSupportedException($"Can't get instance member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
+        }
+
+        public static Action GetStaticMethodCaller(this MethodInfo methodInfo)
+        {
+            return EmitUtilities.CreateStaticMethodCaller(methodInfo);
+        }
+
+        public static Action<object> GetInstanceMethodCaller(this MethodInfo methodInfo)
+        {
+            return EmitUtilities.CreateWeakInstanceMethodCaller(methodInfo);
+        }
+
+        public static Action<T> GetInstanceMethodCaller<T>(this MethodInfo methodInfo)
+        {
+            return EmitUtilities.CreateInstanceMethodCaller<T>(methodInfo);
+        }
+
+        public static Action<T, TArg1> GetInstanceMethodCaller<T, TArg1>(this MethodInfo methodInfo)
+        {
+            return EmitUtilities.CreateInstanceMethodCaller<T, TArg1>(methodInfo);
+        }
     }
 }

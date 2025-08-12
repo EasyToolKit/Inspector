@@ -22,7 +22,7 @@ namespace EasyToolKit.Inspector.Editor
             return type.IsBasic() ||
                    type.IsUnityBuiltInType() ||
                    type.IsInheritsFrom<UnityEngine.Object>() ||
-                   type.HasCustomAttribute<SerializableAttribute>();
+                   type.IsDefined<SerializableAttribute>();
         }
 
         public static bool IsSerializableField(FieldInfo fieldInfo)
@@ -32,20 +32,20 @@ namespace EasyToolKit.Inspector.Editor
                 return false;
             }
 
-            var nonSerialized = fieldInfo.HasCustomAttribute<NonSerializedAttribute>();
+            var nonSerialized = fieldInfo.IsDefined<NonSerializedAttribute>();
             if (fieldInfo.IsPublic && !nonSerialized)
             {
                 return true;
             }
 
-            return !nonSerialized && fieldInfo.HasCustomAttribute<SerializeField>();
+            return !nonSerialized && fieldInfo.IsDefined<SerializeField>();
         }
 
         public static bool IsAllowChildrenType(Type type)
         {
             return !type.IsBasic() &&
                 !IsUnityObjectTypeOrDefinedUnityPropertyDrawer(type) &&
-                type.HasCustomAttribute<SerializableAttribute>();
+                type.IsDefined<SerializableAttribute>();
         }
 
         public static bool IsAllowChildrenField(FieldInfo fieldInfo)
@@ -56,7 +56,7 @@ namespace EasyToolKit.Inspector.Editor
                 return false;
             }
 
-            if (fieldInfo.HasCustomAttribute<ShowInInspectorAttribute>())
+            if (fieldInfo.IsDefined<ShowInInspectorAttribute>())
             {
                 return true;
             }

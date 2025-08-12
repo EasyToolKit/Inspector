@@ -15,51 +15,12 @@ namespace EasyToolKit.Inspector.Editor
         [CanBeNull] private Type _propertyResolverType;
         private MemberInfo _memberInfo;
         private bool? _isArrayElement;
-        private bool? _isAllowChildren;
 
         [CanBeNull] public IValueAccessor ValueAccessor { get; private set; }
         [CanBeNull] public Type PropertyType { get; private set; }
         public string PropertyName { get; private set; }
         public bool IsLogicRoot { get; private set; }
         public bool IsUnityProperty { get; private set; }
-
-        public bool IsAllowChildren
-        {
-            get
-            {
-                if (_isAllowChildren != null)
-                {
-                    return _isAllowChildren.Value;
-                }
-
-                _isAllowChildren = false;
-
-                var memberInfo = TryGetMemberInfo();
-                if (memberInfo != null)
-                {
-                    if (memberInfo is FieldInfo fieldInfo)
-                    {
-                        _isAllowChildren = InspectorPropertyInfoUtility.IsAllowChildrenField(fieldInfo);
-                        return _isAllowChildren.Value;
-                    }
-                    else if (memberInfo is PropertyInfo propertyInfo)
-                    {
-                        throw new NotImplementedException();
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-
-                if (PropertyType != null)
-                {
-                    _isAllowChildren = InspectorPropertyInfoUtility.IsAllowChildrenType(PropertyType);
-                }
-
-                return _isAllowChildren.Value;
-            }
-        }
 
         private InspectorPropertyInfo()
         {
@@ -216,8 +177,7 @@ namespace EasyToolKit.Inspector.Editor
             {
                 PropertyType = serializedObject.targetObject.GetType(),
                 PropertyName = iterator.name,
-                IsLogicRoot = true,
-                _isAllowChildren = true
+                IsLogicRoot = true
             };
 
             info.ValueAccessor = new GenericValueAccessor(
@@ -233,11 +193,6 @@ namespace EasyToolKit.Inspector.Editor
 
         public IPropertyResolver GetPreferencedChildrenResolver()
         {
-            if (!IsAllowChildren)
-            {
-                return null;
-            }
-
             if (_propertyResolverType == null)
             {
                 return new GenericPropertyResolver();

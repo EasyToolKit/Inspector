@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace EasyToolKit.Inspector.Editor
 {
-    public class EasyGroupAttributeDrawer<TAttribute> : EasyAttributeDrawer<TAttribute>
+    public abstract class EasyGroupAttributeDrawer<TAttribute> : EasyAttributeDrawer<TAttribute>
         where TAttribute : BeginGroupAttribute
     {
         protected override void DrawProperty(GUIContent label)

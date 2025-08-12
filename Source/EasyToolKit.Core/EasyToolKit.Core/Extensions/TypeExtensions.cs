@@ -123,28 +123,6 @@ namespace EasyToolKit.Core
             return (T)CreateInstance(type, args);
         }
 
-        public static T GetCustomAttribute<T>(this Type type) where T : Attribute
-        {
-            return type.GetCustomAttributes<T>().FirstOrDefault();
-        }
-
-        public static T GetCustomAttribute<T>(this Type type, bool inherit) where T : Attribute
-        {
-            return type.GetCustomAttributes<T>(inherit).FirstOrDefault();
-        }
-
-
-        public static bool HasCustomAttribute<T>(this Type type) where T : Attribute
-        {
-            return type.GetCustomAttributes<T>().Any();
-        }
-
-
-        public static bool HasCustomAttribute<T>(this Type type, bool inherit) where T : Attribute
-        {
-            return type.GetCustomAttributes<T>(inherit).Any();
-        }
-
         public static bool IsUnityBuiltInType(this Type type)
         {
             return type == typeof(Vector2) || type == typeof(Vector2Int) || type == typeof(Vector3) || type == typeof(Vector3Int) ||
@@ -215,23 +193,6 @@ namespace EasyToolKit.Core
             return type.IsBasic() || type.IsUnityObject();
         }
 
-        public static T GetPropertyValue<T>(this Type type, string propertyName, BindingFlags flags, object target)
-        {
-            var property = type.GetProperty(propertyName, flags);
-            if (property == null)
-            {
-                throw new ArgumentException(
-                    $"Property '{propertyName}' with binding flags '{flags}' was not found on type '{type}'");
-            }
-
-            return (T)property.GetValue(target, null);
-        }
-
-        public static T GetPropertyValue<T>(this Type type, string propertyName, object target)
-        {
-            return type.GetPropertyValue<T>(propertyName, BindingFlagsHelper.All, target);
-        }
-
         public static MethodInfo GetMethodEx(this Type type, string methodName, BindingFlags flags, params Type[] argTypes)
         {
             return type.GetMethods(flags).FirstOrDefault(m =>
@@ -262,43 +223,6 @@ namespace EasyToolKit.Core
 
                 return true;
             });
-        }
-
-        public static object InvokeMethod(this Type type, string methodName, BindingFlags flags, object target,
-            params object[] args)
-        {
-            var method = type.GetMethodEx(methodName, flags, args.Select(a => a.GetType()).ToArray());
-
-            if (method == null)
-            {
-                throw new ArgumentException(
-                    $"Method '{methodName}' with binding flags '{flags}' was not found on type '{type}'");
-            }
-
-            return method.Invoke(target, args);
-        }
-
-        public static object InvokeMethod(this Type type, string methodName, object target,
-            params object[] args)
-        {
-            return type.InvokeMethod(methodName, BindingFlagsHelper.All, target, args);
-        }
-
-        public static void AddEvent(this Type type, string eventName, BindingFlags flags, object target, Delegate func)
-        {
-            var e = type.GetEvent(eventName, flags);
-            if (e == null)
-            {
-                throw new ArgumentException(
-                    $"Event '{eventName}' with binding flags '{flags}' was not found on type '{type}'");
-            }
-
-            e.GetAddMethod().Invoke(target, new object[] { func });
-        }
-
-        public static void AddEvent(this Type type, string eventName, object target, Delegate func)
-        {
-            type.AddEvent(eventName, BindingFlagsHelper.All, target, func);
         }
 
         public static Type[] GetAllBaseTypes(this Type type, bool includeInterface = true,
@@ -362,6 +286,11 @@ namespace EasyToolKit.Core
         {
             return ThirdParty.OdinSerializer.Utilities.TypeExtensions.ImplementsOpenGenericType(candidateType,
                 openGenericType);
+        }
+
+        public static IEnumerable<MemberInfo> GetAllMembers(this Type type, BindingFlags flags)
+        {
+            return ThirdParty.OdinSerializer.Utilities.TypeExtensions.GetAllMembers(type, flags);
         }
 
         /// <summary>

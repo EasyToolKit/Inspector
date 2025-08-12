@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using EasyToolKit.Core;
 using UnityEngine;
 
@@ -13,48 +14,49 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            var fieldInfos = Property.ValueEntry.ValueType.GetFields(BindingFlagsHelper.AllInstance);
+            var targetType = Property.ValueEntry.ValueType;
+            var memberInfos = targetType.GetAllMembers(BindingFlagsHelper.AllInstance).Where(Filter).OrderBy(Order);
 
-            foreach (var fieldInfo in fieldInfos)
+            foreach (var memberInfo in memberInfos)
             {
-                if (fieldInfo.HasCustomAttribute<HideInInspector>())
+                if (memberInfo is MethodInfo methodInfo && !methodInfo.GetCustomAttributes().Any())
                 {
                     continue;
                 }
 
-                var definedShowInInspector = fieldInfo.HasCustomAttribute<ShowInInspectorAttribute>();
-                if (!InspectorPropertyInfoUtility.IsSerializableField(fieldInfo) && !definedShowInInspector)
+                if (memberInfo.IsDefined<HideInInspector>())
                 {
                     continue;
                 }
 
-                if (!definedShowInInspector)
+                var definedShowInInspector = memberInfo.IsDefined<ShowInInspectorAttribute>();
+                if (memberInfo is FieldInfo fieldInfo)
                 {
-                    if (!fieldInfo.FieldType.IsSubclassOf(typeof(UnityEngine.Object)) &&
-                        !fieldInfo.FieldType.IsValueType &&
-                        !fieldInfo.FieldType.HasCustomAttribute<SerializableAttribute>())
+                    if (!InspectorPropertyInfoUtility.IsSerializableField(fieldInfo) && !definedShowInInspector)
                     {
                         continue;
                     }
+
+                    if (!definedShowInInspector)
+                    {
+                        var memberType = memberInfo.GetMemberType();
+                        if (!memberType.IsInheritsFrom<UnityEngine.Object>() &&
+                            !memberType.IsValueType &&
+                            !memberType.IsDefined<SerializableAttribute>())
+                        {
+                            continue;
+                        }
+                    }
                 }
 
-                _propertyInfos.Add(InspectorPropertyInfo.CreateForField(fieldInfo));
-            }
-
-            var methodInfos = Property.ValueEntry.ValueType.GetMethods(BindingFlagsHelper.AllInstance);
-            foreach (var methodInfo in methodInfos)
-            {
-                if (!methodInfo.GetCustomAttributes().Any())
+                if (memberInfo is PropertyInfo propertyInfo)
                 {
+                    //TODO support property
                     continue;
                 }
 
-                if (methodInfo.HasCustomAttribute<HideInInspector>())
-                {
-                    continue;
-                }
 
-                _propertyInfos.Add(InspectorPropertyInfo.CreateForMethod(methodInfo));
+                _propertyInfos.Add(InspectorPropertyInfo.CreateForMember(memberInfo));
             }
         }
 
@@ -76,6 +78,27 @@ namespace EasyToolKit.Inspector.Editor
         public override InspectorPropertyInfo GetChildInfo(int childIndex)
         {
             return _propertyInfos[childIndex];
+        }
+
+        private int Order(MemberInfo arg1)
+        {
+            if (arg1 is FieldInfo) return 1;
+            if (arg1 is PropertyInfo) return 2;
+            if (arg1 is MethodInfo) return 3;
+            return 4;
+        }
+
+        private bool Filter(MemberInfo member)
+        {
+            var targetType = Property.ValueEntry.ValueType;
+            if (member.DeclaringType == typeof(object) && targetType != typeof(object)) return false;
+            if (!(member is FieldInfo || member is PropertyInfo || member is MethodInfo)) return false;
+            if (member is FieldInfo fieldInfo && fieldInfo.IsSpecialName) return false;
+            if (member is MethodInfo methodInfo && methodInfo.IsSpecialName) return false;
+            if (member is PropertyInfo propertyInfo && propertyInfo.IsSpecialName) return false;
+            if (member.IsDefined<CompilerGeneratedAttribute>()) return false;
+
+            return true;
         }
     }
 }

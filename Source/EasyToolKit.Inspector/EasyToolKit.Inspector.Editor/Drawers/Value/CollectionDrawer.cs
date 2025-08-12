@@ -82,7 +82,7 @@ namespace EasyToolKit.Inspector.Editor
                 _listDrawerSettings = Property.GetAttribute<ListDrawerSettingsAttribute>();
             }
 
-            var isListDrawerClassAttribute = _listDrawerSettings != null && Property.IsClassAttribute(_listDrawerSettings);
+            var isListDrawerClassAttribute = _listDrawerSettings != null && Property.GetAttributeSource(_listDrawerSettings) == AttributeSource.Type;
             var listDrawerTargetType = isListDrawerClassAttribute
                 ? Property.ValueEntry.ValueType
                 : Property.Parent.ValueEntry.ValueType;
@@ -159,7 +159,7 @@ namespace EasyToolKit.Inspector.Editor
                 }
             }
 
-            var isValueDropdownClassAttribute = _valueDropdownAttribute != null && Property.IsClassAttribute(_valueDropdownAttribute);
+            var isValueDropdownClassAttribute = _valueDropdownAttribute != null && Property.GetAttributeSource(_valueDropdownAttribute) == AttributeSource.Type;
             var valueDropdownTargetType = isValueDropdownClassAttribute
                 ? Property.ValueEntry.ValueType
                 : Property.Parent.ValueEntry.ValueType;

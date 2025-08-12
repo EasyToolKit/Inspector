@@ -46,9 +46,9 @@ namespace EasyToolKit.Core.Editor
             ContextWidthGetter = ReflectionUtility.CreateStaticValueGetter<float>(typeof(EditorGUIUtility), "contextWidth");
             FieldInfo field = typeof(EditorGUIUtility).GetField("s_ContextWidth", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             if (field != null)
-                ContextWidthSetter = EmitUtilities.CreateStaticFieldSetter<float>(field);
+                ContextWidthSetter = field.GetStaticMemberValueSetter<float>();
             else
-                ContextWidthStackGetter = EmitUtilities.CreateStaticFieldGetter<Stack<float>>(typeof(EditorGUIUtility).GetField("s_ContextWidthStack", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+                ContextWidthStackGetter = typeof(EditorGUIUtility).GetField("s_ContextWidthStack", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy).GetStaticMemberValueGetter<Stack<float>>();
 
             ActualLabelWidthGetter =
                 ReflectionUtility.CreateStaticValueGetter<float>(typeof(EditorGUIUtility), "s_LabelWidth");

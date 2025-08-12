@@ -50,18 +50,18 @@ namespace EasyToolKit.Inspector.Editor
 
                 if (!field.IsPublic)
                 {
-                    if (field.HasCustomAttribute<HideInInspector>())
+                    if (field.IsDefined<HideInInspector>())
                     {
                         continue;
                     }
 
-                    if (!field.HasCustomAttribute<SerializeField>() &&
-                        !field.HasCustomAttribute<ShowInInspectorAttribute>())
+                    if (!field.IsDefined<SerializeField>() &&
+                        !field.IsDefined<ShowInInspectorAttribute>())
                     {
                         continue;
                     }
 
-                    if (field.HasCustomAttribute<NonSerializedAttribute>())
+                    if (field.IsDefined<NonSerializedAttribute>())
                     {
                         continue;
                     }
@@ -69,7 +69,7 @@ namespace EasyToolKit.Inspector.Editor
 
                 if (!field.FieldType.IsSubclassOf(typeof(UnityEngine.Object)) &&
                     !field.FieldType.IsValueType &&
-                    !field.FieldType.HasCustomAttribute<SerializableAttribute>())
+                    !field.FieldType.IsDefined<SerializableAttribute>())
                 {
                     continue;
                 }

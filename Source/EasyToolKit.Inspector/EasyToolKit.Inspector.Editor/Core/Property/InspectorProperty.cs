@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using EasyToolKit.Core;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -17,6 +18,7 @@ namespace EasyToolKit.Inspector.Editor
         private IDrawerChainResolver _drawerChainResolver;
         private IAttributeResolver _attributeResolver;
         private long? _lastUpdateID;
+        private bool? _isAllowChildren;
 
         public InspectorProperty Parent { get; private set; }
         public PropertyTree Tree { get; }
@@ -226,7 +228,7 @@ namespace EasyToolKit.Inspector.Editor
             _isSelfReadOnlyCache = null;
             UpdateValueEntry();
 
-            if (Children == null && Info.IsAllowChildren)
+            if (Children == null && IsAllowChildren())
             {
                 ChildrenResolver = Info.GetPreferencedChildrenResolver();
                 Children = new PropertyChildren(this);
@@ -284,6 +286,7 @@ namespace EasyToolKit.Inspector.Editor
         public void Refresh()
         {
             _isSelfReadOnlyCache = null;
+            _isAllowChildren = null;
             ReinitializeResolver(_childrenResolver);
             ReinitializeResolver(_drawerChainResolver);
             ReinitializeResolver(_attributeResolver);
@@ -328,14 +331,9 @@ namespace EasyToolKit.Inspector.Editor
             return null;
         }
 
-        /// <summary>
-        /// Determines if the specified attribute is a class attribute (defined at the type level)
-        /// </summary>
-        /// <param name="attribute">The attribute to check</param>
-        /// <returns>True if the attribute is a class attribute, false otherwise</returns>
-        public bool IsClassAttribute(Attribute attribute)
+        public AttributeSource GetAttributeSource(Attribute attribute)
         {
-            return AttributeResolver.GetAttributeSource(attribute) == AttributeSource.Type;
+            return AttributeResolver.GetAttributeSource(attribute);
         }
 
         public void Draw()
@@ -378,9 +376,49 @@ namespace EasyToolKit.Inspector.Editor
             }
         }
 
+        private bool IsAllowChildren()
+        {
+            if (Info.IsLogicRoot)
+            {
+                return true;
+            }
+
+            if (_isAllowChildren != null)
+            {
+                return _isAllowChildren.Value;
+            }
+
+            _isAllowChildren = false;
+
+            var memberInfo = Info.TryGetMemberInfo();
+            if (memberInfo != null)
+            {
+                if (memberInfo is FieldInfo fieldInfo)
+                {
+                    _isAllowChildren = InspectorPropertyInfoUtility.IsAllowChildrenField(fieldInfo);
+                    return _isAllowChildren.Value;
+                }
+                else if (memberInfo is PropertyInfo propertyInfo)
+                {
+                    throw new NotImplementedException();
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (ValueEntry != null)
+            {
+                _isAllowChildren = InspectorPropertyInfoUtility.IsAllowChildrenType(ValueEntry.ValueType);
+            }
+
+            return _isAllowChildren.Value;
+        }
+
         public override string ToString()
         {
-            return $"Property '{Path}'";
+            return $"{Path}";
         }
     }
 }

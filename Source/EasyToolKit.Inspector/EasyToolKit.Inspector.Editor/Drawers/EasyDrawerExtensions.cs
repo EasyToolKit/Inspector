@@ -18,7 +18,7 @@ namespace EasyToolKit.Inspector.Editor
         public static Type GetTargetTypeForResolver<TAttribute>(this EasyAttributeDrawer<TAttribute> drawer)
             where TAttribute : Attribute
         {
-            return drawer.IsClassAttribute
+            return drawer.AttributeSource == AttributeSource.Type
                 ? drawer.Property.ValueEntry.ValueType
                 : drawer.Property.Parent.ValueEntry.ValueType;
         }
@@ -26,7 +26,7 @@ namespace EasyToolKit.Inspector.Editor
         public static object GetTargetForResolver<TAttribute>(this EasyAttributeDrawer<TAttribute> drawer)
             where TAttribute : Attribute
         {
-            return drawer.IsClassAttribute
+            return drawer.AttributeSource == AttributeSource.Type
                 ? drawer.Property.ValueEntry.WeakSmartValue
                 : drawer.Property.Parent.ValueEntry.WeakSmartValue;
         }
@@ -34,7 +34,7 @@ namespace EasyToolKit.Inspector.Editor
         public static TValue GetTargetForResolver<TAttribute, TValue>(this EasyAttributeDrawer<TAttribute, TValue> drawer)
             where TAttribute : Attribute
         {
-            return drawer.IsClassAttribute
+            return drawer.AttributeSource == AttributeSource.Type
                 ? drawer.ValueEntry.SmartValue
                 : (drawer.Property.Parent.ValueEntry as IPropertyValueEntry<TValue>).SmartValue;
         }

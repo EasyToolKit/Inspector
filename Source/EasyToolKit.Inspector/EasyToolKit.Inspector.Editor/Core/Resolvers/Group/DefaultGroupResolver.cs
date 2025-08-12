@@ -29,7 +29,7 @@ namespace EasyToolKit.Inspector.Editor
             }
 
             // Check if this is a class attribute, and if so, automatically set EndAfterThisProperty
-            bool isClassAttribute = Property.IsClassAttribute(beginGroupAttribute);
+            bool isClassAttribute = Property.GetAttributeSource(beginGroupAttribute) == AttributeSource.Type;
             if (isClassAttribute || beginGroupAttribute.EndAfterThisProperty)
             {
                 properties = new InspectorProperty[] { };

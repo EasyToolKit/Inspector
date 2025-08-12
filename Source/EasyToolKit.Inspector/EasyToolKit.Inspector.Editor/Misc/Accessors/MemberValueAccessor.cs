@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using EasyToolKit.Core;
 using EasyToolKit.ThirdParty.OdinSerializer.Utilities;
 
 namespace EasyToolKit.Inspector.Editor
@@ -12,20 +13,8 @@ namespace EasyToolKit.Inspector.Editor
 
         public MemberValueAccessor(MemberInfo memberInfo)
         {
-            if (memberInfo is FieldInfo fieldInfo)
-            {
-                _getter = EmitUtilities.CreateInstanceFieldGetter<TOwner, TValue>(fieldInfo);
-                _setter = EmitUtilities.CreateInstanceFieldSetter<TOwner, TValue>(fieldInfo);
-            }
-            else if (memberInfo is PropertyInfo propertyInfo)
-            {
-                _getter = EmitUtilities.CreateInstancePropertyGetter<TOwner, TValue>(propertyInfo);
-                _setter = EmitUtilities.CreateInstancePropertySetter<TOwner, TValue>(propertyInfo);
-            }
-            else
-            {
-                throw new NotSupportedException();  //TODO 异常信息
-            }
+            _getter = memberInfo.GetInstanceMemberValueGetter<TOwner, TValue>();
+            _setter = memberInfo.GetInstanceMemberValueSetter<TOwner, TValue>();
 
             _memberInfo = memberInfo;
         }
