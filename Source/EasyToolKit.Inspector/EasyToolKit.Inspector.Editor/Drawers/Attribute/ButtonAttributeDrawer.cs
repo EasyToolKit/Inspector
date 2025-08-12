@@ -20,7 +20,9 @@ namespace EasyToolKit.Inspector.Editor
         protected override void Initialize()
         {
             _methodInfo = Property.Info.TryGetMemberInfo() as MethodInfo;
-            var targetType = Property.Parent.ValueEntry.ValueType;
+
+            var targetType = this.GetTargetTypeForResolver();
+
             _buttonLabelResolver = CodeValueResolver.Create<string>(Attribute.Label, targetType, true);
         }
 
@@ -32,7 +34,8 @@ namespace EasyToolKit.Inspector.Editor
                 return;
             }
 
-            var buttonLabel = _buttonLabelResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+            var resolveTarget = this.GetTargetForResolver();
+            var buttonLabel = _buttonLabelResolver.Resolve(resolveTarget);
             if (GUILayout.Button(buttonLabel))
             {
                 foreach (var target in Property.Parent.ValueEntry.WeakValues)

@@ -50,7 +50,7 @@ namespace EasyToolKit.Inspector.Editor
                 {
                     if (Property.IsReadOnly)
                     {
-                        Debug.LogWarning($"Property '{Property.Info.PropertyPath}' cannot be edited.");
+                        Debug.LogWarning($"Property '{Property.Path}' cannot be edited.");
                         return;
                     }
 

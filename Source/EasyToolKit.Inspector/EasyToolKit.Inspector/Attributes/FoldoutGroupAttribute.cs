@@ -7,6 +7,7 @@ using EasyToolKit.Inspector;
 namespace EasyToolKit.Inspector
 {
     [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class FoldoutGroupAttribute : BeginGroupAttribute
     {
         public string Label { get; set; }
@@ -19,6 +20,7 @@ namespace EasyToolKit.Inspector
     }
 
     [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class EndFoldoutGroupAttribute : EndGroupAttribute
     {
     }

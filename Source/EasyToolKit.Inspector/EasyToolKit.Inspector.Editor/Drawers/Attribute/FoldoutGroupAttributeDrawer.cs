@@ -13,7 +13,7 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            var targetType = Property.Parent.ValueEntry.ValueType;
+            var targetType = this.GetTargetTypeForResolver();
             _labelResolver = CodeValueResolver.Create<string>(Attribute.Label, targetType, true);
         }
 
@@ -30,7 +30,7 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void BeginDrawProperty(GUIContent label, ref bool foldout)
         {
-            var labelText = _labelResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+            var labelText = _labelResolver.Resolve(this.GetTargetForResolver());
             Property.State.Expanded = EasyEditorGUI.Foldout(Property.State.Expanded, TempContent.SetText(labelText));
 
             foldout = Property.State.Expanded;

@@ -12,7 +12,8 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            var targetType = Property.Parent.ValueEntry.ValueType;
+            var targetType = this.GetTargetTypeForResolver();
+
             _conditionResolver = CodeValueResolver.CreateWeak(Attribute.Condition, null, targetType);
         }
 
@@ -24,7 +25,8 @@ namespace EasyToolKit.Inspector.Editor
                 return;
             }
 
-            var condition = _conditionResolver.ResolveWeak(Property.Parent.ValueEntry.WeakSmartValue);
+            var resolveTarget = this.GetTargetForResolver();
+            var condition = _conditionResolver.ResolveWeak(resolveTarget);
             var value = Attribute.Value;
             var hide = Equals(condition, value);
 

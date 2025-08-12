@@ -82,7 +82,10 @@ namespace EasyToolKit.Inspector.Editor
                 _listDrawerSettings = Property.GetAttribute<ListDrawerSettingsAttribute>();
             }
 
-            var targetType = Property.Parent.ValueEntry.ValueType;
+            var isListDrawerClassAttribute = _listDrawerSettings != null && Property.IsClassAttribute(_listDrawerSettings);
+            var listDrawerTargetType = isListDrawerClassAttribute
+                ? Property.ValueEntry.ValueType
+                : Property.Parent.ValueEntry.ValueType;
 
             if (_listDrawerSettings != null)
             {
@@ -90,7 +93,7 @@ namespace EasyToolKit.Inspector.Editor
                 {
                     if (metroListDrawerSettings.IconTextureGetter.IsNotNullOrEmpty())
                     {
-                        _iconTextureGetterResolver = CodeValueResolver.Create<Texture>(metroListDrawerSettings.IconTextureGetter, targetType);
+                        _iconTextureGetterResolver = CodeValueResolver.Create<Texture>(metroListDrawerSettings.IconTextureGetter, listDrawerTargetType);
                     }
                 }
 
@@ -98,8 +101,8 @@ namespace EasyToolKit.Inspector.Editor
                 {
                     if (_listDrawerSettings.OnAddedElementCallback.IsNotNullOrEmpty())
                     {
-                        var onAddedElementMethod = targetType.GetMethodEx(_listDrawerSettings.OnAddedElementCallback, BindingFlagsHelper.All, typeof(object))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.OnAddedElementCallback}' in '{targetType}'");
+                        var onAddedElementMethod = listDrawerTargetType.GetMethodEx(_listDrawerSettings.OnAddedElementCallback, BindingFlagsHelper.All, typeof(object))
+                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.OnAddedElementCallback}' in '{listDrawerTargetType}'");
 
                         _onAddedElementCallback = (instance, value) =>
                         {
@@ -109,8 +112,8 @@ namespace EasyToolKit.Inspector.Editor
 
                     if (_listDrawerSettings.OnRemovedElementCallback.IsNotNullOrEmpty())
                     {
-                        var onRemovedElementMethod = targetType.GetMethodEx(_listDrawerSettings.OnRemovedElementCallback, BindingFlagsHelper.All, typeof(object))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.OnRemovedElementCallback}' in '{targetType}'");
+                        var onRemovedElementMethod = listDrawerTargetType.GetMethodEx(_listDrawerSettings.OnRemovedElementCallback, BindingFlagsHelper.All, typeof(object))
+                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.OnRemovedElementCallback}' in '{listDrawerTargetType}'");
 
                         _onRemovedElementCallback = (instance, value) =>
                         {
@@ -120,8 +123,8 @@ namespace EasyToolKit.Inspector.Editor
 
                     if (_listDrawerSettings.CustomCreateElementFunction.IsNotNullOrEmpty())
                     {
-                        var customCreateElementFunction = targetType.GetMethodEx(_listDrawerSettings.CustomCreateElementFunction, BindingFlagsHelper.All)
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomCreateElementFunction}' in '{targetType}'");
+                        var customCreateElementFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomCreateElementFunction, BindingFlagsHelper.All)
+                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomCreateElementFunction}' in '{listDrawerTargetType}'");
 
                         _customCreateElementFunction = instance =>
                         {
@@ -131,8 +134,8 @@ namespace EasyToolKit.Inspector.Editor
 
                     if (_listDrawerSettings.CustomRemoveElementFunction.IsNotNullOrEmpty())
                     {
-                        var customRemoveElementFunction = targetType.GetMethodEx(_listDrawerSettings.CustomRemoveElementFunction, BindingFlagsHelper.All)
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomRemoveElementFunction}' in '{targetType}'");
+                        var customRemoveElementFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomRemoveElementFunction, BindingFlagsHelper.All)
+                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomRemoveElementFunction}' in '{listDrawerTargetType}'");
 
                         _customRemoveElementFunction = (instance, value) =>
                         {
@@ -142,8 +145,8 @@ namespace EasyToolKit.Inspector.Editor
 
                     if (_listDrawerSettings.CustomRemoveIndexFunction.IsNotNullOrEmpty())
                     {
-                        var customRemoveIndexFunction = targetType.GetMethodEx(_listDrawerSettings.CustomRemoveIndexFunction, BindingFlagsHelper.All, typeof(int))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomRemoveIndexFunction}' in '{targetType}'");
+                        var customRemoveIndexFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomRemoveIndexFunction, BindingFlagsHelper.All, typeof(int))
+                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomRemoveIndexFunction}' in '{listDrawerTargetType}'");
                         _customRemoveIndexFunction = (instance, index) =>
                         {
                             customRemoveIndexFunction.Invoke(instance, new object[] { index });
@@ -156,9 +159,14 @@ namespace EasyToolKit.Inspector.Editor
                 }
             }
 
+            var isValueDropdownClassAttribute = _valueDropdownAttribute != null && Property.IsClassAttribute(_valueDropdownAttribute);
+            var valueDropdownTargetType = isValueDropdownClassAttribute
+                ? Property.ValueEntry.ValueType
+                : Property.Parent.ValueEntry.ValueType;
+
             if (_valueDropdownAttribute != null)
             {
-                _valueDropdownOptionsGetterResolver = CodeValueResolver.Create<object>(_valueDropdownAttribute.OptionsGetter, targetType);
+                _valueDropdownOptionsGetterResolver = CodeValueResolver.Create<object>(_valueDropdownAttribute.OptionsGetter, valueDropdownTargetType);
             }
         }
 
@@ -242,11 +250,11 @@ namespace EasyToolKit.Inspector.Editor
             if (!_listDrawerSettings.HideAddButton)
             {
                 var btnRect = GUILayoutUtility.GetRect(
-                EasyEditorIcons.Plus.HighlightedContent,
-                "Button",
-                GUILayout.ExpandWidth(false),
-                GUILayout.Width(30),
-                GUILayout.Height(30));
+                    EasyEditorIcons.Plus.HighlightedContent,
+                    "Button",
+                    GUILayout.ExpandWidth(false),
+                    GUILayout.Width(30),
+                    GUILayout.Height(30));
 
                 if (GUI.Button(btnRect, GUIContent.none, "Button"))
                 {
@@ -387,6 +395,7 @@ namespace EasyToolKit.Inspector.Editor
                 EasyEditorGUI.ShowValueDropdownMenu(addButtonRect, dropdownItems, (item) =>
                 {
                     var value = item.GetValue();
+
                     for (int i = 0; i < Property.Tree.Targets.Length; i++)
                     {
                         DoAddElement(i, value);

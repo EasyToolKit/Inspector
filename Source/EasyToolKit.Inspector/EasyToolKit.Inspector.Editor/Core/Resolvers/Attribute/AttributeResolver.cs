@@ -4,9 +4,30 @@ using JetBrains.Annotations;
 
 namespace EasyToolKit.Inspector.Editor
 {
+    /// <summary>
+    /// Specifies the source of an attribute in the InspectorProperty system
+    /// </summary>
+    public enum AttributeSource
+    {
+        /// <summary>
+        /// Attribute comes from a member (field, property, method)
+        /// </summary>
+        Member,
+
+        /// <summary>
+        /// Attribute comes from a type (class-level attribute)
+        /// </summary>
+        Type
+    }
+
     public interface IAttributeResolver : IInitializableResolver
     {
         Attribute[] GetAttributes();
+
+        /// <summary>
+        /// Gets the source of an attribute to determine if it's a class-level attribute
+        /// </summary>
+        AttributeSource GetAttributeSource(Attribute attribute);
     }
 
     public abstract class AttributeResolver : IAttributeResolver
@@ -19,7 +40,7 @@ namespace EasyToolKit.Inspector.Editor
             get => Property;
             set => Property = value;
         }
-        
+
         bool IInitializable.IsInitialized => IsInitialized;
 
         void IInitializable.Initialize()
@@ -36,9 +57,10 @@ namespace EasyToolKit.Inspector.Editor
             IsInitialized = false;
         }
 
-        protected virtual void Initialize() {}
-        protected virtual void Deinitialize() {}
+        protected virtual void Initialize() { }
+        protected virtual void Deinitialize() { }
 
         public abstract Attribute[] GetAttributes();
+        public abstract AttributeSource GetAttributeSource(Attribute attribute);
     }
 }

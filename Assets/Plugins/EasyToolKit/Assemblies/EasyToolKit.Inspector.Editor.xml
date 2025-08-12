@@ -4,6 +4,38 @@
         <name>EasyToolKit.Inspector.Editor</name>
     </assembly>
     <members>
+        <member name="M:EasyToolKit.Inspector.Editor.InspectorProperty.IsClassAttribute(System.Attribute)">
+            <summary>
+            Determines if the specified attribute is a class attribute (defined at the type level)
+            </summary>
+            <param name="attribute">The attribute to check</param>
+            <returns>True if the attribute is a class attribute, false otherwise</returns>
+        </member>
+        <member name="T:EasyToolKit.Inspector.Editor.AttributeSource">
+            <summary>
+            Specifies the source of an attribute in the InspectorProperty system
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Inspector.Editor.AttributeSource.Member">
+            <summary>
+            Attribute comes from a member (field, property, method)
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Inspector.Editor.AttributeSource.Type">
+            <summary>
+            Attribute comes from a type (class-level attribute)
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Inspector.Editor.IAttributeResolver.GetAttributeSource(System.Attribute)">
+            <summary>
+            Gets the source of an attribute to determine if it's a class-level attribute
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Inspector.Editor.EasyAttributeDrawer`1.IsClassAttribute">
+            <summary>
+            Determines if the current attribute is a class-level attribute
+            </summary>
+        </member>
         <member name="T:EasyToolKit.Inspector.Editor.GlobalPersistentContext">
             <summary>
             Context that persists across reloading and restarting Unity.

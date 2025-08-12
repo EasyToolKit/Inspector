@@ -28,7 +28,7 @@ namespace EasyToolKit.Inspector.Editor
             }
             else
             {
-                _serializedProperty = Property.Tree.GetUnityPropertyByPath(Property.Info.PropertyPath);
+                _serializedProperty = Property.Tree.GetUnityPropertyByPath(Property.UnityPath);
                 if (_serializedProperty == null)
                 {
                     throw new InvalidOperationException(); //TODO 异常信息

@@ -44,6 +44,15 @@ namespace EasyToolKit.Inspector.Editor
 
         public string Name => Info.PropertyName;
 
+        public string Path { get; private set; }
+        public string UnityPath
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public string NiceName
         {
             get
@@ -183,6 +192,15 @@ namespace EasyToolKit.Inspector.Editor
             Info = info;
             Index = index;
 
+            if (parent != null)
+            {
+                Path = parent.Path + "." + info.PropertyName;
+            }
+            else
+            {
+                Path = info.PropertyName;
+            }
+
             Label = new GUIContent(NiceName);
 
             _drawerChainResolver = new DefaultDrawerChainResolver();
@@ -241,6 +259,7 @@ namespace EasyToolKit.Inspector.Editor
                         }
                         var wrapperType = typeof(PropertyValueEntryWrapper<,>).MakeGenericType(valueType, BaseValueEntry.BaseValueType);
                         ValueEntry = wrapperType.CreateInstance<IPropertyValueEntry>(BaseValueEntry);
+                        Refresh();
                     }
                 }
                 else if (ValueEntry != BaseValueEntry)
@@ -280,7 +299,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             if (DrawerChainResolver == null)
             {
-                throw new InvalidOperationException($"DrawerChainResolver of property '{Info.PropertyPath}' cannot be null.");
+                throw new InvalidOperationException($"DrawerChainResolver of property '{Path}' cannot be null.");
             }
             return DrawerChainResolver.GetDrawerChain();
         }
@@ -307,6 +326,16 @@ namespace EasyToolKit.Inspector.Editor
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines if the specified attribute is a class attribute (defined at the type level)
+        /// </summary>
+        /// <param name="attribute">The attribute to check</param>
+        /// <returns>True if the attribute is a class attribute, false otherwise</returns>
+        public bool IsClassAttribute(Attribute attribute)
+        {
+            return AttributeResolver.GetAttributeSource(attribute) == AttributeSource.Type;
         }
 
         public void Draw()
@@ -347,6 +376,11 @@ namespace EasyToolKit.Inspector.Editor
                 resolver.Property = this;
                 resolver.Initialize();
             }
+        }
+
+        public override string ToString()
+        {
+            return $"Property '{Path}'";
         }
     }
 }

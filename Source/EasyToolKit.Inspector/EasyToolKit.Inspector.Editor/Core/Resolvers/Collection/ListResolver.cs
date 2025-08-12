@@ -12,16 +12,7 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            _minLength = int.MaxValue;
-            foreach (var value in Property.ValueEntry.WeakValues)
-            {
-                if (value == null)
-                {
-                    _minLength = 0;
-                    break;
-                }
-                _minLength = Mathf.Min(_minLength, ((IList<TElement>)value).Count);
-            }
+            _minLength = CalculateMinLength();
         }
 
         public override int ChildNameToIndex(string name)
@@ -86,6 +77,27 @@ namespace EasyToolKit.Inspector.Editor
         {
             var collection = GetCollection(targetIndex);
             collection.RemoveAt(index);
+        }
+
+        protected override bool ApplyChanges()
+        {
+            var result = base.ApplyChanges();
+            _minLength = CalculateMinLength();
+            return result;
+        }
+
+        private int CalculateMinLength()
+        {
+            var minLength = int.MaxValue;
+            foreach (var value in Property.ValueEntry.WeakValues)
+            {
+                if (value == null)
+                {
+                    return 0;
+                }
+                minLength = Mathf.Min(minLength, ((IList<TElement>)value).Count);
+            }
+            return minLength;
         }
     }
 }

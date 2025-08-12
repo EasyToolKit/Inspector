@@ -6,6 +6,7 @@ namespace EasyToolKit.Inspector.Editor
         where TAttribute : Attribute
     {
         private TAttribute _attribute;
+        private bool? _isClassAttribute;
 
         public TAttribute Attribute
         {
@@ -17,6 +18,21 @@ namespace EasyToolKit.Inspector.Editor
                 }
 
                 return _attribute;
+            }
+        }
+
+        /// <summary>
+        /// Determines if the current attribute is a class-level attribute
+        /// </summary>
+        public bool IsClassAttribute
+        {
+            get
+            {
+                if (!_isClassAttribute.HasValue)
+                {
+                    _isClassAttribute = Property.IsClassAttribute(Attribute);
+                }
+                return _isClassAttribute ?? false;
             }
         }
 

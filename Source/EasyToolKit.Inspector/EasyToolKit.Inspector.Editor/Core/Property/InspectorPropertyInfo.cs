@@ -19,7 +19,6 @@ namespace EasyToolKit.Inspector.Editor
 
         [CanBeNull] public IValueAccessor ValueAccessor { get; private set; }
         [CanBeNull] public Type PropertyType { get; private set; }
-        public string PropertyPath { get; private set; }
         public string PropertyName { get; private set; }
         public bool IsLogicRoot { get; private set; }
         public bool IsUnityProperty { get; private set; }
@@ -93,7 +92,6 @@ namespace EasyToolKit.Inspector.Editor
             var info = new InspectorPropertyInfo()
             {
                 PropertyType = valueType,
-                PropertyPath = serializedProperty.propertyPath,
                 PropertyName = serializedProperty.name,
                 IsUnityProperty = true
             };
@@ -154,8 +152,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             var info = new InspectorPropertyInfo()
             {
-                PropertyPath = methodInfo.Name + "()",
-                PropertyName = methodInfo.Name,
+                PropertyName = methodInfo.Name + "()",
                 IsUnityProperty = false,
                 _memberInfo = methodInfo
             };
@@ -168,7 +165,6 @@ namespace EasyToolKit.Inspector.Editor
             var info = new InspectorPropertyInfo()
             {
                 PropertyType = fieldInfo.FieldType,
-                PropertyPath = fieldInfo.Name,
                 PropertyName = fieldInfo.Name,
                 IsUnityProperty = false,
                 _memberInfo = fieldInfo
@@ -204,7 +200,6 @@ namespace EasyToolKit.Inspector.Editor
             var info = new InspectorPropertyInfo()
             {
                 PropertyType = valueType,
-                PropertyPath = valueName,
                 PropertyName = valueName,
                 IsUnityProperty = false,
                 ValueAccessor = valueAccessor
@@ -220,7 +215,6 @@ namespace EasyToolKit.Inspector.Editor
             var info = new InspectorPropertyInfo()
             {
                 PropertyType = serializedObject.targetObject.GetType(),
-                PropertyPath = iterator.propertyPath,
                 PropertyName = iterator.name,
                 IsLogicRoot = true,
                 _isAllowChildren = true

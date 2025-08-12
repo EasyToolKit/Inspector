@@ -21,7 +21,16 @@ namespace EasyToolKit.Inspector.Editor
             }
 
             var beginGroupAttribute = (BeginGroupAttribute)Property.GetAttributes().FirstOrDefault(attr => attr.GetType() == beginGroupAttributeType);
-            if (beginGroupAttribute == null || beginGroupAttribute.EndAfterThisProperty)
+            if (beginGroupAttribute == null)
+            {
+                properties = new InspectorProperty[] { };
+                _groupPropertiesCache[beginGroupAttributeType] = properties;
+                return properties;
+            }
+
+            // Check if this is a class attribute, and if so, automatically set EndAfterThisProperty
+            bool isClassAttribute = Property.IsClassAttribute(beginGroupAttribute);
+            if (isClassAttribute || beginGroupAttribute.EndAfterThisProperty)
             {
                 properties = new InspectorProperty[] { };
                 _groupPropertiesCache[beginGroupAttributeType] = properties;
@@ -45,7 +54,7 @@ namespace EasyToolKit.Inspector.Editor
                 _groupPropertiesCache[beginGroupAttributeType] = properties;
                 return properties;
             }
-            
+
 
             var groupName = beginGroupAttribute.GroupName;
             var endGroupAttributeType =

@@ -33,7 +33,8 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            var targetType = Property.Parent.ValueEntry.ValueType;
+            var targetType = this.GetTargetTypeForResolver();
+
             _labelResolver = CodeValueResolver.Create<string>(Attribute.Label, targetType, true);
             _iconTextureGetterResolver = CodeValueResolver.Create<Texture>(Attribute.IconTextureGetter, targetType);
         }
@@ -66,13 +67,15 @@ namespace EasyToolKit.Inspector.Editor
             GUILayout.Box(GUIContent.none, EasyGUIStyles.WhiteBoxStyle, GUILayout.Width(3), GUILayout.Height(30));
             EasyGUIHelper.PopColor();
 
+            var resolveTarget = this.GetTargetForResolver();
+
             if (Attribute.IconTextureGetter.IsNotNullOrEmpty())
             {
-                var iconTexture = _iconTextureGetterResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+                var iconTexture = _iconTextureGetterResolver.Resolve(resolveTarget);
                 GUILayout.Label(iconTexture, GUILayout.Width(30), GUILayout.Height(30));
             }
 
-            var labelText = _labelResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+            var labelText = _labelResolver.Resolve(resolveTarget);
 
             var foldoutRect = EditorGUILayout.GetControlRect(true, 30, FoldoutStyle);
             Property.State.Expanded = EasyEditorGUI.Foldout(foldoutRect, Property.State.Expanded, TempContent.SetText(labelText), FoldoutStyle);

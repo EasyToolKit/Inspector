@@ -1,4 +1,5 @@
 using EasyToolKit.Inspector;
+using System;
 using System.Diagnostics;
 
 [assembly: RegisterGroupAttributeScope(typeof(MetroBoxGroupAttribute), typeof(EndMetroBoxGroupAttribute))]
@@ -6,6 +7,7 @@ using System.Diagnostics;
 namespace EasyToolKit.Inspector
 {
     [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class MetroBoxGroupAttribute : BeginGroupAttribute
     {
         public string Label { get; set; }
@@ -17,6 +19,8 @@ namespace EasyToolKit.Inspector
         }
     }
 
+    [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class EndMetroBoxGroupAttribute : EndGroupAttribute
     {
     }

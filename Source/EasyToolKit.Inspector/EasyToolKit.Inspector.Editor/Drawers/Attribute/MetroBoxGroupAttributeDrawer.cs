@@ -38,7 +38,8 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            var targetType = Property.Parent.ValueEntry.ValueType;
+            var targetType = this.GetTargetTypeForResolver();
+
             _labelResolver = CodeValueResolver.Create<string>(Attribute.Label, targetType, true);
             _iconTextureGetterResolver = CodeValueResolver.Create<Texture>(Attribute.IconTextureGetter, targetType);
         }
@@ -63,13 +64,15 @@ namespace EasyToolKit.Inspector.Editor
         protected override void BeginDrawProperty(GUIContent label, ref bool foldout)
         {
             Texture iconTexture = null;
+            var resolveTarget = this.GetTargetForResolver();
+
             if (Attribute.IconTextureGetter.IsNotNullOrEmpty())
             {
-                iconTexture = _iconTextureGetterResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+                iconTexture = _iconTextureGetterResolver.Resolve(resolveTarget);
                 GUILayout.Label(iconTexture, GUILayout.Width(30), GUILayout.Height(30));
             }
 
-            var labelText = _labelResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+            var labelText = _labelResolver.Resolve(resolveTarget);
 
             BeginDraw(TempContent.SetText(labelText), iconTexture);
         }
@@ -82,7 +85,7 @@ namespace EasyToolKit.Inspector.Editor
         public static void BeginDraw(GUIContent label, Texture iconTexture)
         {
             EasyEditorGUI.BeginIndentedVertical(BoxContainerStyle);
-            
+
             GUILayout.Space(-3);
             var headerBgRect = EditorGUILayout.BeginHorizontal(EasyGUIStyles.BoxHeaderStyle, GUILayout.ExpandWidth(true), GUILayout.Height(30));
 
@@ -95,7 +98,7 @@ namespace EasyToolKit.Inspector.Editor
                 EasyGUIHelper.PopColor();
                 EasyEditorGUI.DrawBorders(headerBgRect, 0, 0, 0, 1, EasyGUIStyles.BorderColor);
             }
-            
+
             if (iconTexture != null)
             {
                 GUILayout.Label(iconTexture, GUILayout.Width(30), GUILayout.Height(30));

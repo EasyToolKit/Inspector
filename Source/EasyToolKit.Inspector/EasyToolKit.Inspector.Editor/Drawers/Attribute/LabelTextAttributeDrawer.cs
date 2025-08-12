@@ -12,7 +12,8 @@ namespace EasyToolKit.Inspector.Editor
 
         protected override void Initialize()
         {
-            var targetType = Property.Parent.ValueEntry.ValueType;
+            var targetType = this.GetTargetTypeForResolver();
+
             _labelResolver = CodeValueResolver.Create<string>(Attribute.Label, targetType, true);
         }
 
@@ -24,7 +25,8 @@ namespace EasyToolKit.Inspector.Editor
                 return;
             }
 
-            label.text = _labelResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
+            var resolveTarget = this.GetTargetForResolver();
+            label.text = _labelResolver.Resolve(resolveTarget);
             CallNextDrawer(label);
         }
     }

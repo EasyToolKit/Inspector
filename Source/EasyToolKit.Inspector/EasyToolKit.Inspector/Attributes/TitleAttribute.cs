@@ -5,6 +5,7 @@ using UnityEngine;
 namespace EasyToolKit.Inspector
 {
     [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class TitleAttribute : Attribute
     {
         public string Title { get; set; }

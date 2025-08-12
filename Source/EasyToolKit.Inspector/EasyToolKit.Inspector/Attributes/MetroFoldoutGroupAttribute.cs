@@ -8,6 +8,7 @@ using UnityEngine;
 namespace EasyToolKit.Inspector
 {
     [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class MetroFoldoutGroupAttribute : BeginGroupAttribute
     {
         public string Label { get; set; }
@@ -31,6 +32,7 @@ namespace EasyToolKit.Inspector
     }
 
     [Conditional("UNITY_EDITOR")]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class EndMetroFoldoutGroupAttribute : EndGroupAttribute
     {
         public EndMetroFoldoutGroupAttribute()

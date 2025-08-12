@@ -15,7 +15,7 @@ namespace EasyToolKit.Inspector.Editor
             }
 
             var propertyType = property.Info.PropertyType;
-            var unityProperty = property.Tree.GetUnityPropertyByPath(property.Info.PropertyPath);
+            var unityProperty = property.Tree.GetUnityPropertyByPath(property.UnityPath);
             if (propertyType == null || unityProperty == null)
             {
                 return false;
@@ -23,12 +23,12 @@ namespace EasyToolKit.Inspector.Editor
 
             return !propertyType.IsSubclassOf(typeof(UnityEngine.Object)) && InspectorDrawerUtility.IsDefinedUnityPropertyDrawer(propertyType);
         }
-        
+
         private SerializedProperty _serializedProperty;
 
         protected override void Initialize()
         {
-            _serializedProperty = Property.Tree.GetUnityPropertyByPath(Property.Info.PropertyPath);
+            _serializedProperty = Property.Tree.GetUnityPropertyByPath(Property.UnityPath);
         }
 
         protected override void DrawProperty(GUIContent label)

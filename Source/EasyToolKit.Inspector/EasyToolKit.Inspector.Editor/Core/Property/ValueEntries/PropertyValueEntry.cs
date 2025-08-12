@@ -79,7 +79,7 @@ namespace EasyToolKit.Inspector.Editor
             {
                 foreach (var target in Property.Tree.Targets)
                 {
-                    Undo.RecordObject(target, $"Change {Property.Info.PropertyPath} on {target.name}");
+                    Undo.RecordObject(target, $"Change {Property.Path} on {target.name}");
                 }
 
                 changed = Values.ApplyChanges();
@@ -111,7 +111,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             if (Property.Info.IsUnityProperty)
             {
-                var serializedProperty = Property.Tree.GetUnityPropertyByPath(Property.Info.PropertyPath);
+                var serializedProperty = Property.Tree.GetUnityPropertyByPath(Property.UnityPath);
                 return serializedProperty.hasMultipleDifferentValues;
             }
 
