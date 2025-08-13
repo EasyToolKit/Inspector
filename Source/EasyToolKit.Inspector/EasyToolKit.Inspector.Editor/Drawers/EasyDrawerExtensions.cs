@@ -23,20 +23,20 @@ namespace EasyToolKit.Inspector.Editor
                 : drawer.Property.Parent.ValueEntry.ValueType;
         }
 
-        public static object GetTargetForResolver<TAttribute>(this EasyAttributeDrawer<TAttribute> drawer)
+        public static object GetTargetForResolver<TAttribute>(this EasyAttributeDrawer<TAttribute> drawer, int targetIndex = 0)
             where TAttribute : Attribute
         {
             return drawer.AttributeSource == AttributeSource.Type
-                ? drawer.Property.ValueEntry.WeakSmartValue
-                : drawer.Property.Parent.ValueEntry.WeakSmartValue;
+                ? drawer.Property.ValueEntry.WeakValues[targetIndex]
+                : drawer.Property.Parent.ValueEntry.WeakValues[targetIndex];
         }
 
-        public static TValue GetTargetForResolver<TAttribute, TValue>(this EasyAttributeDrawer<TAttribute, TValue> drawer)
+        public static TValue GetTargetForResolver<TAttribute, TValue>(this EasyAttributeDrawer<TAttribute, TValue> drawer, int targetIndex = 0)
             where TAttribute : Attribute
         {
             return drawer.AttributeSource == AttributeSource.Type
-                ? drawer.ValueEntry.SmartValue
-                : (drawer.Property.Parent.ValueEntry as IPropertyValueEntry<TValue>).SmartValue;
+                ? drawer.ValueEntry.Values[targetIndex]
+                : (drawer.Property.Parent.ValueEntry as IPropertyValueEntry<TValue>).Values[targetIndex];
         }
     }
 }
