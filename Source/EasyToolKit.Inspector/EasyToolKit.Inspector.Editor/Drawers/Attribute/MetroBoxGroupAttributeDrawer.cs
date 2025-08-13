@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace EasyToolKit.Inspector.Editor
 {
+    [DrawerPriority(DrawerPriorityLevel.Attribute + 100)]
     public class MetroBoxGroupAttributeDrawer : EasyGroupAttributeDrawer<MetroBoxGroupAttribute>
     {
         private static readonly GUIContent TempContent = new GUIContent();

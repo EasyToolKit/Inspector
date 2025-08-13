@@ -519,10 +519,10 @@ namespace EasyToolKit.Core.Editor
 
         public static int ValueDropdown<T>(Rect rect, GUIContent label, int selectedIndex, T[] values, Func<int, T, GUIContent> optionContentGetter, GUIStyle style = null)
         {
-            var controlID = GUIUtility.GetControlID(FocusType.Passive, rect);
+            var controlID = GUIUtility.GetControlID(FocusType.Keyboard, rect);
             var selected = values[selectedIndex];
             var display = EditorGUI.showMixedValue ? MixedValueContent : optionContentGetter(selectedIndex, selected);
-            var buttonRect = label == null ? rect : EditorGUI.PrefixLabel(rect, controlID, label, EditorStyles.label);
+            var buttonRect = label == null ? rect : EditorGUI.PrefixLabel(rect, controlID, label);
             style ??= EditorStyles.popup;
             if (label == null)
             {

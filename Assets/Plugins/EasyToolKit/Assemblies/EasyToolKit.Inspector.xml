@@ -4,5 +4,25 @@
         <name>EasyToolKit.Inspector</name>
     </assembly>
     <members>
+        <member name="F:EasyToolKit.Inspector.MessageBoxType.None">
+            <summary>
+              <para>Neutral message.</para>
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Inspector.MessageBoxType.Info">
+            <summary>
+              <para>Info message.</para>
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Inspector.MessageBoxType.Warning">
+            <summary>
+              <para>Warning message.</para>
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Inspector.MessageBoxType.Error">
+            <summary>
+              <para>Error message.</para>
+            </summary>
+        </member>
     </members>
 </doc>

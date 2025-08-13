@@ -290,7 +290,34 @@ namespace EasyToolKit.Core
 
         public static IEnumerable<MemberInfo> GetAllMembers(this Type type, BindingFlags flags)
         {
-            return ThirdParty.OdinSerializer.Utilities.TypeExtensions.GetAllMembers(type, flags);
+            if ((flags & BindingFlags.DeclaredOnly) == BindingFlags.DeclaredOnly)
+            {
+                var members = type.GetMembers(flags);
+                for (int i = 0; i < members.Length; i++)
+                {
+                    yield return members[i];
+                }
+                yield break;
+            }
+            flags |= BindingFlags.DeclaredOnly;
+
+            var currentType = type;
+            var baseTypes = new Stack<Type>();
+            do
+            {
+                baseTypes.Push(currentType);
+                currentType = currentType.BaseType;
+            } while (currentType != null);
+
+            while (baseTypes.Count > 0)
+            {
+                currentType = baseTypes.Pop();
+                var members = currentType.GetMembers(flags);
+                for (int i = 0; i < members.Length; i++)
+                {
+                    yield return members[i];
+                }
+            }
         }
 
         /// <summary>
