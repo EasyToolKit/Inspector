@@ -58,7 +58,7 @@ namespace EasyToolKit.Core
         {
             return !string.IsNullOrEmpty(val);
         }
-        
+
         public static bool IsNotNullOrWhiteSpace(this string val)
         {
             return !string.IsNullOrWhiteSpace(val);
@@ -67,6 +67,11 @@ namespace EasyToolKit.Core
         public static string DefaultIfNullOrEmpty(this string val, string defaultValue)
         {
             return IsNullOrEmpty(val) ? defaultValue : val;
+        }
+
+        public static string DefaultIfNullOrWhiteSpace(this string val, string defaultValue)
+        {
+            return IsNullOrWhiteSpace(val) ? defaultValue : val;
         }
 
         public static bool Contains(this string str, string toCheck, StringComparison comparisonType)
@@ -116,14 +121,14 @@ namespace EasyToolKit.Core
             // 检查是否是 C# 关键字
             string[] keywords = new string[]
             {
-                "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", 
+                "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
                 "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
-                "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", 
-                "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", 
-                "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", 
-                "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", 
-                "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", 
-                "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", 
+                "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for",
+                "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is",
+                "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override",
+                "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
+                "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw",
+                "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using",
                 "virtual", "void", "volatile", "while"
             };
             if (Array.Exists(keywords, keyword => keyword.Equals(identifier, StringComparison.OrdinalIgnoreCase)))

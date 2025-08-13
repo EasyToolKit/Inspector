@@ -40,7 +40,7 @@ namespace EasyToolKit.Core
                 }
             }
         }
-        
+
         public static void DrawCube(Transform transform, Vector3 offset, Vector3 cubeSize, bool wireOnly)
         {
             Matrix4x4 rotationMatrix = transform.localToWorldMatrix;
@@ -54,7 +54,7 @@ namespace EasyToolKit.Core
                 Gizmos.DrawCube(offset, cubeSize);
             }
         }
-        
+
         public static void DrawMeshRect(Vector2 center, Vector2 size)
         {
             DrawMeshRect(center, size, new Vector2(0.1f, 0.1f));

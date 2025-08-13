@@ -6,12 +6,12 @@ namespace EasyToolKit.Core
 {
     public static class CollectionExtensions
     {
-        public static bool AllSame<T>(this IEnumerable<T> enumerator)
+        public static bool IsAllSame<T>(this IEnumerable<T> enumerator)
         {
-            return enumerator.AllSame((a, b) => EqualityComparer<T>.Default.Equals(a, b));
+            return enumerator.IsAllSame((a, b) => EqualityComparer<T>.Default.Equals(a, b));
         }
 
-        public static bool AllSame<T>(this IEnumerable<T> enumerator, Func<T, T, bool> comparison)
+        public static bool IsAllSame<T>(this IEnumerable<T> enumerator, Func<T, T, bool> comparison)
         {
             if (enumerator == null)
                 throw new ArgumentNullException(nameof(enumerator));
@@ -119,7 +119,7 @@ namespace EasyToolKit.Core
             return result;
         }
 
-        public static T[] Kick<T>(this T[] array, int index)
+        public static T[] RemoveAt<T>(this T[] array, int index)
         {
             if (index < 0 || index >= array.Length)
             {

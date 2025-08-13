@@ -4,11 +4,11 @@ namespace EasyToolKit.Core
 {
     public static class AudioExtensions
     {
-        public static void PlayWithChildren(this AudioSource audio)
+        public static void PlayWithChildren(this AudioSource audioSource)
         {
-            foreach (var a in audio.GetComponentsInChildren<AudioSource>())
+            foreach (var child in audioSource.GetComponentsInChildren<AudioSource>())
             {
-                a.Play();
+                child.Play();
             }
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +14,10 @@ namespace EasyToolKit.Core.Editor
         private static readonly List<int> currentListItemIndecies = new List<int>();
         private static float currentDrawingToolbarHeight;
         private static int currentScope = 0;
+        private static int? currentDropdownControlID = 0;
+        private static int? selectedDropdownIndex = 0;
+
+        public static readonly GUIContent MixedValueContent = new GUIContent("—");
 
         /// <summary>
         /// Begins a vertical indentation. Remember to end with <see cref="EndIndentedVertical"/>.
@@ -472,23 +477,90 @@ namespace EasyToolKit.Core.Editor
             }
         }
 
-        public static void ShowValueDropdownMenu<T>(Rect position, IReadOnlyList<T> values, Action<T> onSelected)
+        public static void ShowValueDropdownMenu<T>(Rect position, [CanBeNull] T selected, T[] values, Action<T> onSelected)
         {
-            ShowValueDropdownMenu(position, values, onSelected, value => new GUIContent(value.ToString()));
+            ShowValueDropdownMenu(position, selected, values, onSelected, value => new GUIContent(value.ToString()));
         }
 
-        public static void ShowValueDropdownMenu<T>(Rect position, IReadOnlyList<T> values, Action<T> onSelected, Func<T, GUIContent> optionContentGetter)
+        public static void ShowValueDropdownMenu<T>(Rect position, [CanBeNull] T selected, T[] values, Action<T> onSelected, Func<T, GUIContent> optionContentGetter)
         {
-            ShowValueDropdownMenu(position, values, onSelected, (index, value) => optionContentGetter(value));
+            var selectedIndex = selected == null ? -1 : Array.IndexOf(values, selected);
+            ShowValueDropdownMenu(position, selectedIndex, values, (index) => onSelected(values[index]), (index, value) => optionContentGetter(value));
         }
 
-        public static void ShowValueDropdownMenu<T>(Rect position, IReadOnlyList<T> values, Action<T> onSelected, Func<int, T, GUIContent> optionContentGetter)
+        public static void ShowValueDropdownMenu<T>(Rect position, int selectedIndex, T[] values, Action<int> onSelected, Func<int, T, GUIContent> optionContentGetter)
         {
             var options = values.Select((value, index) => optionContentGetter(index, value)).ToArray();
-            EditorUtility.DisplayCustomMenu(position, options, -1, (userData, options, selected) =>
+            EditorUtility.DisplayCustomMenu(position, options, selectedIndex, (userData, options, selected) =>
             {
-                onSelected(values[selected]);
+                onSelected(selected);
             }, null);
+        }
+
+        public static T ValueDropdown<T>(GUIContent label, T selected, T[] values, GUIContent[] optionContents, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            var selectedIndex = Array.IndexOf(values, selected);
+            selectedIndex = ValueDropdown(label, selectedIndex, values, (index, value) => optionContents[index], style);
+            return values[selectedIndex];
+        }
+
+        public static T ValueDropdown<T>(Rect rect, GUIContent label, T selected, T[] values, GUIContent[] optionContents, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            var selectedIndex = Array.IndexOf(values, selected);
+            selectedIndex = ValueDropdown(rect, label, selectedIndex, values, (index, value) => optionContents[index], style);
+            return values[selectedIndex];
+        }
+
+        public static int ValueDropdown<T>(GUIContent label, int selectedIndex, T[] values, Func<int, T, GUIContent> optionContentGetter, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            var rect = EditorGUILayout.GetControlRect(label != null, EditorGUIUtility.singleLineHeight, style ?? EditorStyles.numberField, options);
+            return ValueDropdown(rect, label, selectedIndex, values, optionContentGetter, style);
+        }
+
+        public static int ValueDropdown<T>(Rect rect, GUIContent label, int selectedIndex, T[] values, Func<int, T, GUIContent> optionContentGetter, GUIStyle style = null)
+        {
+            var controlID = GUIUtility.GetControlID(FocusType.Passive, rect);
+            var selected = values[selectedIndex];
+            var display = EditorGUI.showMixedValue ? MixedValueContent : optionContentGetter(selectedIndex, selected);
+            var buttonRect = label == null ? rect : EditorGUI.PrefixLabel(rect, controlID, label, EditorStyles.label);
+            style ??= EditorStyles.popup;
+            if (label == null)
+            {
+                buttonRect = EditorGUI.IndentedRect(buttonRect);
+            }
+            return ValueDropdownImplementation(buttonRect, display, controlID, selectedIndex, values, optionContentGetter, style);
+        }
+
+        private static int ValueDropdownImplementation<T>(
+            Rect buttonRect,
+            GUIContent display,
+            int controlID,
+            int selectedIndex,
+            T[] values,
+            Func<int, T, GUIContent> optionContentGetter,
+            GUIStyle style)
+        {
+            if (GUI.Button(buttonRect, display, style))
+            {
+                ShowValueDropdownMenu(buttonRect, selectedIndex, values, (index) =>
+                {
+                    currentDropdownControlID = controlID;
+                    selectedDropdownIndex = index;
+                }, optionContentGetter);
+            }
+
+            if (currentDropdownControlID != null && controlID == currentDropdownControlID)
+            {
+                currentDropdownControlID = null;
+                if (selectedIndex != selectedDropdownIndex)
+                {
+                    GUI.changed = true;
+                    selectedIndex = selectedDropdownIndex.Value;
+                }
+                selectedDropdownIndex = null;
+            }
+
+            return selectedIndex;
         }
 
         public static void MessageBox(string message, MessageType messageType)

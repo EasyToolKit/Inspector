@@ -16,9 +16,6 @@
         <Reference Include="EasyToolKit.ThirdParty.OdinSerializer">
           <HintPath>..\..\..\Assets\Plugins\EasyToolKit\Assemblies\ThirdParty\OdinSerializer\JIT\EasyToolKit.ThirdParty.OdinSerializer.dll</HintPath>
         </Reference>
-        <Reference Include="Sirenix.Serialization.Config">
-            <HintPath>..\..\..\..\EasyFramework\Assets\Plugins\Sirenix\Assemblies\Sirenix.Serialization.Config.dll</HintPath>
-        </Reference>
         <Reference Include="UnityEngine.AnimationModule">
           <HintPath>..\..\Libraries\UnityEngine.AnimationModule.dll</HintPath>
         </Reference>

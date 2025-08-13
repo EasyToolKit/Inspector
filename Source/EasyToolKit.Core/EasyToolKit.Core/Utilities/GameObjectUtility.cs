@@ -77,7 +77,7 @@ namespace EasyToolKit.Core
                             continue;
                         if (hierarchy.Length == 2)
                             return o;
-                        
+
                         int len = path.IndexOf('/') + 1;
                         target = FindByRelativePath(path.Substring(len, path.Length - len), o.transform)?.gameObject;
                         if (target != null)
@@ -88,6 +88,6 @@ namespace EasyToolKit.Core
 
             return target;
         }
-        
+
     }
 }

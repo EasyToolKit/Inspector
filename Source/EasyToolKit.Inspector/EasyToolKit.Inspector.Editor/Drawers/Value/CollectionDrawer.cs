@@ -392,7 +392,7 @@ namespace EasyToolKit.Inspector.Editor
                     throw new InvalidOperationException($"The return type of '{_valueDropdownAttribute.OptionsGetter}' must be IEnumerable<IValueDropdownItem> or IEnumerable<object>");
                 }
 
-                EasyEditorGUI.ShowValueDropdownMenu(addButtonRect, dropdownItems, (item) =>
+                EasyEditorGUI.ShowValueDropdownMenu(addButtonRect, null, dropdownItems.ToArray(), (item) =>
                 {
                     var value = item.GetValue();
 

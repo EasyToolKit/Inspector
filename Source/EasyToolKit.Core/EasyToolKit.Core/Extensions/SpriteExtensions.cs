@@ -20,25 +20,25 @@ namespace EasyToolKit.Core
 
             return subSprites;
         }
-        
+
         private static Sprite CreateSlice(Sprite sourceSprite, int columnIndex, int rowIndex, int totalColumns, int totalRows)
         {
             Texture2D texture = sourceSprite.texture;
             Rect textureRect = sourceSprite.textureRect;
-            
+
             float spriteWidth = textureRect.width / totalColumns;
             float spriteHeight = textureRect.height / totalRows;
-            
+
             // 计算每个子 Sprite 的区域
             float x = textureRect.x + columnIndex * spriteWidth;
             float y = textureRect.y + (totalRows - rowIndex - 1) * spriteHeight; // 修正Y坐标以匹配Unity的坐标系
-            
+
             Rect subSpriteRect = new Rect(x, y, spriteWidth, spriteHeight);
-            
+
             // 创建每个小 Sprite
             Sprite slice = Sprite.Create(texture, subSpriteRect, new Vector2(0.5f, 0.5f));
             slice.name = $"{sourceSprite.name}_{rowIndex}_{columnIndex}";
-            
+
             return slice;
         }
     }
