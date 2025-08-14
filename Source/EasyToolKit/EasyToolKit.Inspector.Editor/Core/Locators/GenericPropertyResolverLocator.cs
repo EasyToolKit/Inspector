@@ -24,7 +24,7 @@ namespace EasyToolKit.Inspector.Editor
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"Not implemented {type}.");
                 }
             }
             else

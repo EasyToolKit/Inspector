@@ -34,6 +34,8 @@ namespace EasyToolKit.Inspector.Editor
 
         public Type ValueType => typeof(TValue);
 
+        public int ValueCount => _valueEntry.ValueCount;
+
         public event Action<int> OnValueChanged
         {
             add => _valueEntry.OnValueChanged += value;

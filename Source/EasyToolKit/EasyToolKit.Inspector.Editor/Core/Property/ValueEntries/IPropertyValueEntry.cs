@@ -5,12 +5,14 @@ namespace EasyToolKit.Inspector.Editor
 {
     public interface IPropertyValueEntry : IDisposable
     {
-        object WeakSmartValue { get; set; }
         Type ValueType { get; }
         Type BaseValueType { get; }
         [CanBeNull] Type RuntimeValueType { get; }
-        IPropertyValueCollection WeakValues { get; }
         InspectorProperty Property { get; }
+
+        int ValueCount { get; }
+        object WeakSmartValue { get; set; }
+        IPropertyValueCollection WeakValues { get; }
 
         event Action<int> OnValueChanged;
 

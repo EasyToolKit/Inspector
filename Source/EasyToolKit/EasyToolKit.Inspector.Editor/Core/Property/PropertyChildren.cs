@@ -52,7 +52,12 @@ namespace EasyToolKit.Inspector.Editor
             if (Count == 0)
                 return null;
 
-            return Get(_property.ChildrenResolver.ChildNameToIndex(name));
+            var index = _property.ChildrenResolver.ChildNameToIndex(name);
+            if (index < 0)
+            {
+                throw new ArgumentException($"The property '{_property.Path}' has no child with name '{name}'!");
+            }
+            return Get(index);
         }
 
         internal void Update()

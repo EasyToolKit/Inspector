@@ -32,6 +32,12 @@ namespace EasyToolKit.Inspector.Editor
                 var definedShowInInspector = memberInfo.IsDefined<ShowInInspectorAttribute>();
                 if (memberInfo is FieldInfo fieldInfo)
                 {
+                    if (fieldInfo.IsDefined<DirtyTriggerAttribute>())
+                    {
+                        _propertyInfos.Add(InspectorPropertyInfo.CreateForMember(memberInfo));
+                        continue;
+                    }
+
                     if (!InspectorPropertyInfoUtility.IsSerializableField(fieldInfo) && !definedShowInInspector)
                     {
                         continue;

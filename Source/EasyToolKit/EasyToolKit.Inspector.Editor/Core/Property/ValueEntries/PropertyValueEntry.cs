@@ -58,6 +58,8 @@ namespace EasyToolKit.Inspector.Editor
             }
         }
 
+        public int ValueCount => Values.Count;
+
         public void Update()
         {
             if (_lastUpdateID == Property.Tree.UpdatedID)

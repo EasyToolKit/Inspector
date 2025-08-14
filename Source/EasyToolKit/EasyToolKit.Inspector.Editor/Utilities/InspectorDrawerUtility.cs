@@ -159,7 +159,7 @@ namespace EasyToolKit.Inspector.Editor
 
         public static DrawerPriority GetDrawerPriority(Type drawerType)
         {
-            var priority = DrawerPriority.DefaultPriority;
+            DrawerPriority priority = null;
 
             var priorityAttribute = drawerType.GetCustomAttribute<DrawerPriorityAttribute>();
             if (priorityAttribute != null)
@@ -167,7 +167,7 @@ namespace EasyToolKit.Inspector.Editor
                 priority = priorityAttribute.Priority;
             }
 
-            if (priority == DrawerPriority.DefaultPriority)
+            if (priority == null)
             {
                 if (drawerType.IsImplementsOpenGenericType(typeof(EasyAttributeDrawer<>)))
                 {

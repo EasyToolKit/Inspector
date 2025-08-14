@@ -7,7 +7,7 @@ namespace EasyToolKit.Inspector.Editor
     {
         public DrawerPriority Priority { get; }
 
-        public DrawerPriorityAttribute(double value = DrawerPriorityLevel.Default)
+        public DrawerPriorityAttribute(double value = DrawerPriorityLevel.Lowest)
         {
             Priority = new DrawerPriority(value);
         }

@@ -6,7 +6,7 @@ namespace EasyToolKit.Inspector.Editor
 {
     public class DrawerPriority : IEquatable<DrawerPriority>, IComparable<DrawerPriority>
     {
-        public static readonly DrawerPriority DefaultPriority = new DrawerPriority(DrawerPriorityLevel.Default);
+        public static readonly DrawerPriority LowestPriority = new DrawerPriority(DrawerPriorityLevel.Lowest);
         public static readonly DrawerPriority ValuePriority = new DrawerPriority(DrawerPriorityLevel.Value);
         public static readonly DrawerPriority AttributePriority = new DrawerPriority(DrawerPriorityLevel.Attribute);
         public static readonly DrawerPriority SuperPriority = new DrawerPriority(DrawerPriorityLevel.Super);

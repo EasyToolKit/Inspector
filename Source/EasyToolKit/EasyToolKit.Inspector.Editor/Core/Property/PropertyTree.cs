@@ -178,24 +178,33 @@ namespace EasyToolKit.Inspector.Editor
         private void ApplyChanges()
         {
             bool changed = false;
-            foreach (var property in _dirtyProperties)
-            {
-                if (property.ChildrenResolver != null)
-                {
-                    if (property.ChildrenResolver.ApplyChanges())
-                    {
-                        changed = true;
-                    }
-                }
 
-                if (property.ValueEntry != null)
+
+            int restDirtyPropertiesCount;
+            do
+            {
+                var tempDirtyProperties = new List<InspectorProperty>(_dirtyProperties);
+                _dirtyProperties.Clear();
+                foreach (var property in tempDirtyProperties)
                 {
-                    if (property.ValueEntry.ApplyChanges())
+                    if (property.ChildrenResolver != null)
                     {
-                        changed = true;
+                        if (property.ChildrenResolver.ApplyChanges())
+                        {
+                            changed = true;
+                        }
+                    }
+
+                    if (property.ValueEntry != null)
+                    {
+                        if (property.ValueEntry.ApplyChanges())
+                        {
+                            changed = true;
+                        }
                     }
                 }
-            }
+                restDirtyPropertiesCount = _dirtyProperties.Count;
+            } while (restDirtyPropertiesCount > 0);
 
             if (changed)
             {
