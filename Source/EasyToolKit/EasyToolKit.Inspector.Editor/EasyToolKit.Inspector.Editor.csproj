@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>disable</Nullable>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+        <PostBuildEvent>
+            copy "$(MSBuildProjectName).dll" "$(SolutionDir)..\..\Assets\Plugins\EasyToolKit\Assemblies\$(MSBuildProjectName).dll"
+            copy "$(MSBuildProjectName).xml" "$(SolutionDir)..\..\Assets\Plugins\EasyToolKit\Assemblies\$(MSBuildProjectName).xml"
+            copy "$(MSBuildProjectName).pdb" "$(SolutionDir)..\..\Assets\Plugins\EasyToolKit\Assemblies\$(MSBuildProjectName).pdb"
+        </PostBuildEvent>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <DefineConstants>$(DefineConstants);UNITY_ASSERTIONS</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\EasyToolKit.Core.Editor\EasyToolKit.Core.Editor.csproj" />
+      <ProjectReference Include="..\EasyToolKit.Core\EasyToolKit.Core.csproj" />
+      <ProjectReference Include="..\EasyToolKit.Inspector\EasyToolKit.Inspector.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="EasyToolKit.ThirdParty.OdinSerializer">
+        <HintPath>..\..\..\Assets\Plugins\EasyToolKit\Assemblies\ThirdParty\OdinSerializer\EditorOnly\EasyToolKit.ThirdParty.OdinSerializer.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEditor">
+        <HintPath>..\..\Libraries\UnityEditor.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEditor.CoreModule">
+        <HintPath>..\..\Libraries\UnityEditor.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\..\Libraries\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.IMGUIModule">
+        <HintPath>..\..\Libraries\UnityEngine.IMGUIModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.TextRenderingModule">
+        <HintPath>..\..\Libraries\UnityEngine.TextRenderingModule.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>
