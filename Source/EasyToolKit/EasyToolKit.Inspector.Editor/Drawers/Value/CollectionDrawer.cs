@@ -1,22 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using EasyToolKit.Core;
 using EasyToolKit.Core.Editor;
+using EasyToolKit.Inspector.Editor.Internal;
 using EasyToolKit.ThirdParty.OdinSerializer;
-using EasyToolKit.ThirdParty.OdinSerializer.Utilities;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
 namespace EasyToolKit.Inspector.Editor
 {
-    [DrawerPriority(DrawerPriorityLevel.Value + 9)]
-    public class CollectionDrawer<T> : EasyValueDrawer<T>
+    public static class CollectionDrawerStyles
     {
-        private static readonly GUIContent TempContent = new GUIContent();
-
         private static GUIStyle s_metroHeaderLabelStyle;
         public static GUIStyle MetroHeaderLabelStyle
         {
@@ -46,7 +41,11 @@ namespace EasyToolKit.Inspector.Editor
         {
             padding = new RectOffset(30, 37, 3, 3)
         };
+    }
 
+    [DrawerPriority(DrawerPriorityLevel.Value + 9)]
+    public class CollectionDrawer<T> : EasyValueDrawer<T>
+    {
         protected override bool CanDrawValueProperty(InspectorProperty property)
         {
             return property.ChildrenResolver is ICollectionResolver;
@@ -56,6 +55,7 @@ namespace EasyToolKit.Inspector.Editor
         [CanBeNull] private IOrderedCollectionResolver _orderedCollectionResolver;
         [CanBeNull] private ListDrawerSettingsAttribute _listDrawerSettings;
         private bool _isListDrawerClassAttribute;
+        private bool _isReadOnly;
 
         [CanBeNull] private ICodeValueResolver<Texture> _iconTextureGetterResolver;
 
@@ -83,6 +83,8 @@ namespace EasyToolKit.Inspector.Editor
             {
                 _listDrawerSettings = Property.GetAttribute<ListDrawerSettingsAttribute>();
             }
+
+            _isReadOnly = _collectionResolver.IsReadOnly || _listDrawerSettings?.IsReadOnly == true;
 
             _isListDrawerClassAttribute = _listDrawerSettings != null && Property.GetAttributeSource(_listDrawerSettings) == AttributeSource.Type;
             var listDrawerTargetType = _isListDrawerClassAttribute
@@ -228,7 +230,7 @@ namespace EasyToolKit.Inspector.Editor
 
             GUILayout.FlexibleSpace();
 
-            if (!_listDrawerSettings.HideAddButton)
+            if (!_listDrawerSettings.HideAddButton && !_isReadOnly)
             {
                 var buttonRect = GUILayoutUtility.GetRect(22, 22, GUILayout.ExpandWidth(false));
                 if (EasyEditorGUI.ToolbarButton(buttonRect, EasyEditorIcons.Plus))
@@ -242,7 +244,7 @@ namespace EasyToolKit.Inspector.Editor
 
         private void DrawMetroHeader(GUIContent label)
         {
-            EasyGUIHelper.PushColor(MetroHeaderBackgroundColor);
+            EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroHeaderBackgroundColor);
             EasyEditorGUI.BeginHorizontalToolbar(30);
             EasyGUIHelper.PopColor();
 
@@ -254,12 +256,12 @@ namespace EasyToolKit.Inspector.Editor
 
             if (label != null)
             {
-                GUILayout.Label(label, MetroHeaderLabelStyle, GUILayout.Height(30));
+                GUILayout.Label(label, CollectionDrawerStyles.MetroHeaderLabelStyle, GUILayout.Height(30));
             }
 
             GUILayout.FlexibleSpace();
 
-            if (!_listDrawerSettings.HideAddButton)
+            if (!_listDrawerSettings.HideAddButton && !_isReadOnly)
             {
                 var btnRect = GUILayoutUtility.GetRect(
                     EasyEditorIcons.Plus.HighlightedContent,
@@ -311,7 +313,7 @@ namespace EasyToolKit.Inspector.Editor
 
         private void DrawItem(InspectorProperty property, int index)
         {
-            var rect = EasyEditorGUI.BeginListItem(false, ListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
+            var rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.ListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
 
             var dragHandleRect = new Rect(rect.x + 4, rect.y + 2 + ((int)rect.height - 23) / 2, 20, 20);
 
@@ -319,7 +321,7 @@ namespace EasyToolKit.Inspector.Editor
 
             DrawElementProperty(property, index);
 
-            if (!_listDrawerSettings.HideRemoveButton)
+            if (!_listDrawerSettings.HideRemoveButton && !_isReadOnly)
             {
                 var removeBtnRect = new Rect(dragHandleRect.x + rect.width - 22, dragHandleRect.y + 1, 14, 14);
                 if (EasyEditorGUI.IconButton(removeBtnRect, EasyEditorIcons.X))
@@ -340,8 +342,8 @@ namespace EasyToolKit.Inspector.Editor
 
         private void DrawAwesomeItem(InspectorProperty property, int index)
         {
-            EasyGUIHelper.PushColor(MetroItemBackgroundColor);
-            var rect = EasyEditorGUI.BeginListItem(false, MetroListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
+            EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroItemBackgroundColor);
+            var rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.MetroListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
             EasyGUIHelper.PopColor();
 
             var dragHandleRect = new Rect(rect.x + 4, rect.y + 2 + ((int)rect.height - 23) / 2, 23, 23);
@@ -350,7 +352,7 @@ namespace EasyToolKit.Inspector.Editor
 
             DrawElementProperty(property, index);
 
-            if (!_listDrawerSettings.HideRemoveButton)
+            if (!_listDrawerSettings.HideRemoveButton && !_isReadOnly)
             {
                 var removeBtnRect = new Rect(dragHandleRect.x + rect.width - 37, dragHandleRect.y - 5, 30, 30);
                 if (GUI.Button(removeBtnRect, GUIContent.none, "Button"))
@@ -393,7 +395,7 @@ namespace EasyToolKit.Inspector.Editor
                 }
                 if (property.Children != null)
                 {
-                    property.State.Expanded = EasyEditorGUI.Foldout(property.State.Expanded, TempContent.SetText(indexLabel));
+                    property.State.Expanded = EasyEditorGUI.Foldout(property.State.Expanded, EditorHelper.TempContent(indexLabel));
                     if (property.State.Expanded)
                     {
                         EditorGUI.indentLevel++;
@@ -403,7 +405,7 @@ namespace EasyToolKit.Inspector.Editor
                 }
                 else
                 {
-                    property.Draw(TempContent.SetText(indexLabel));
+                    property.Draw(EditorHelper.TempContent(indexLabel));
                 }
             }
             else

@@ -1,5 +1,6 @@
 using EasyToolKit.Core;
 using EasyToolKit.Core.Editor;
+using EasyToolKit.Inspector.Editor.Internal;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,8 +9,6 @@ namespace EasyToolKit.Inspector.Editor
     [DrawerPriority(DrawerPriorityLevel.Attribute + 100)]
     public class FoldoutBoxGroupAttributeDrawer : EasyGroupAttributeDrawer<FoldoutBoxGroupAttribute>
     {
-        private static readonly GUIContent TempContent = new GUIContent();
-
         private ICodeValueResolver<string> _labelResolver;
 
         protected override void Initialize()
@@ -36,7 +35,7 @@ namespace EasyToolKit.Inspector.Editor
             EasyEditorGUI.BeginBoxHeader();
             var resolveTarget = this.GetTargetForResolver();
             var labelText = _labelResolver.Resolve(resolveTarget);
-            Property.State.Expanded = EasyEditorGUI.Foldout(Property.State.Expanded, TempContent.SetText(labelText));
+            Property.State.Expanded = EasyEditorGUI.Foldout(Property.State.Expanded, EditorHelper.TempContent(labelText));
             EasyEditorGUI.EndBoxHeader();
 
             foldout = Property.State.Expanded;

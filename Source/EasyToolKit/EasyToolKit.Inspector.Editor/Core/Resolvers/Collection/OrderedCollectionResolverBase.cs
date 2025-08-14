@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace EasyToolKit.Inspector.Editor
 {
     public interface IOrderedCollectionResolver : ICollectionResolver
@@ -7,7 +9,8 @@ namespace EasyToolKit.Inspector.Editor
         void QueueMoveElemenetAt(int targetIndex, int sourceIndex, int destinationIndex);
     }
 
-    public abstract class OrderedCollectionResolverBase<TElement> : CollectionResolverBase<TElement>, IOrderedCollectionResolver
+    public abstract class OrderedCollectionResolverBase<TCollection, TElement> : CollectionResolverBase<TCollection, TElement>, IOrderedCollectionResolver
+        where TCollection : IEnumerable<TElement>
     {
         public void QueueInsertElementAt(int targetIndex, int index, object value)
         {

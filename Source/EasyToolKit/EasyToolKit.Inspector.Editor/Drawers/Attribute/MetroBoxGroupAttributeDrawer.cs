@@ -1,5 +1,6 @@
 using EasyToolKit.Core;
 using EasyToolKit.Core.Editor;
+using EasyToolKit.Inspector.Editor.Internal;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,8 +9,6 @@ namespace EasyToolKit.Inspector.Editor
     [DrawerPriority(DrawerPriorityLevel.Attribute + 100)]
     public class MetroBoxGroupAttributeDrawer : EasyGroupAttributeDrawer<MetroBoxGroupAttribute>
     {
-        private static readonly GUIContent TempContent = new GUIContent();
-
         private static GUIStyle s_boxHeaderLabelStyle;
         public static GUIStyle BoxHeaderLabelStyle
         {
@@ -75,7 +74,7 @@ namespace EasyToolKit.Inspector.Editor
 
             var labelText = _labelResolver.Resolve(resolveTarget);
 
-            BeginDraw(TempContent.SetText(labelText), iconTexture);
+            BeginDraw(EditorHelper.TempContent(labelText), iconTexture);
         }
 
         protected override void EndDrawProperty()

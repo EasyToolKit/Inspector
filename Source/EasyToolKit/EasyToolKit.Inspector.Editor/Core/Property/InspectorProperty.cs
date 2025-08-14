@@ -89,7 +89,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             get
             {
-                if (_isSelfReadOnlyCache.HasValue)
+                if (_isSelfReadOnlyCache != null)
                 {
                     return _isSelfReadOnlyCache.Value;
                 }
@@ -230,7 +230,7 @@ namespace EasyToolKit.Inspector.Editor
 
             if (Children == null && IsAllowChildren())
             {
-                ChildrenResolver = Info.GetPreferencedChildrenResolver();
+                ChildrenResolver = Info.PropertyResolverLocator.GetResolver(this);
                 Children = new PropertyChildren(this);
             }
 
@@ -287,6 +287,15 @@ namespace EasyToolKit.Inspector.Editor
         {
             _isSelfReadOnlyCache = null;
             _isAllowChildren = null;
+
+            if (_childrenResolver != null)
+            {
+                if (_childrenResolver.IsInitialized)
+                {
+                    _childrenResolver.Deinitialize();
+                }
+                _childrenResolver = Info.PropertyResolverLocator.GetResolver(this);
+            }
             ReinitializeResolver(_childrenResolver);
             ReinitializeResolver(_drawerChainResolver);
             ReinitializeResolver(_attributeResolver);

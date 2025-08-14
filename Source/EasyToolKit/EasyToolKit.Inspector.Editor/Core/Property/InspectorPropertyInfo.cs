@@ -12,10 +12,10 @@ namespace EasyToolKit.Inspector.Editor
 {
     public sealed class InspectorPropertyInfo
     {
-        [CanBeNull] private Type _propertyResolverType;
         private MemberInfo _memberInfo;
         private bool? _isArrayElement;
 
+        [CanBeNull] public IPropertyResolverLocator PropertyResolverLocator { get; private set; }
         [CanBeNull] public IValueAccessor ValueAccessor { get; private set; }
         [CanBeNull] public Type PropertyType { get; private set; }
         public string PropertyName { get; private set; }
@@ -54,7 +54,8 @@ namespace EasyToolKit.Inspector.Editor
             {
                 PropertyType = valueType,
                 PropertyName = serializedProperty.name,
-                IsUnityProperty = true
+                IsUnityProperty = true,
+                PropertyResolverLocator = new UnityPropertyResolverLocator()
             };
 
             if (valueType.IsImplementsOpenGenericType(typeof(ICollection<>)))
@@ -65,7 +66,6 @@ namespace EasyToolKit.Inspector.Editor
                 var accessorType = typeof(UnityCollectionAccessor<,,>)
                     .MakeGenericType(parentType, valueType, elementType);
                 info.ValueAccessor = accessorType.CreateInstance<IValueAccessor>(serializedProperty);
-                info._propertyResolverType = typeof(UnityCollectionResolver<>).MakeGenericType(elementType);
             }
             else
             {
@@ -80,8 +80,6 @@ namespace EasyToolKit.Inspector.Editor
                 {
                     info.ValueAccessor = null;
                 }
-
-                info._propertyResolverType = typeof(UnityPropertyResolver);
             }
 
             return info;
@@ -128,30 +126,13 @@ namespace EasyToolKit.Inspector.Editor
                 PropertyType = fieldInfo.FieldType,
                 PropertyName = fieldInfo.Name,
                 IsUnityProperty = false,
-                _memberInfo = fieldInfo
+                _memberInfo = fieldInfo,
+                PropertyResolverLocator = new GenericPropertyResolverLocator()
             };
 
             var accessorType = typeof(MemberValueAccessor<,>)
                 .MakeGenericType(fieldInfo.DeclaringType, fieldInfo.FieldType);
             info.ValueAccessor = accessorType.CreateInstance<IValueAccessor>(fieldInfo);
-
-            if (fieldInfo.FieldType.IsImplementsOpenGenericType(typeof(ICollection<>)))
-            {
-                var elementType = fieldInfo.FieldType.GetArgumentsOfInheritedOpenGenericType(typeof(ICollection<>))[0];
-
-                if (fieldInfo.FieldType.IsImplementsOpenGenericType(typeof(IList<>)))
-                {
-                    info._propertyResolverType = typeof(ListResolver<>).MakeGenericType(elementType);
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            else
-            {
-                info._propertyResolverType = typeof(GenericPropertyResolver);
-            }
 
             return info;
         }
@@ -163,7 +144,8 @@ namespace EasyToolKit.Inspector.Editor
                 PropertyType = valueType,
                 PropertyName = valueName,
                 IsUnityProperty = false,
-                ValueAccessor = valueAccessor
+                ValueAccessor = valueAccessor,
+                PropertyResolverLocator = new GenericPropertyResolverLocator()
             };
 
             return info;
@@ -177,7 +159,8 @@ namespace EasyToolKit.Inspector.Editor
             {
                 PropertyType = serializedObject.targetObject.GetType(),
                 PropertyName = iterator.name,
-                IsLogicRoot = true
+                IsLogicRoot = true,
+                PropertyResolverLocator = new GenericPropertyResolverLocator()
             };
 
             info.ValueAccessor = new GenericValueAccessor(
@@ -186,19 +169,7 @@ namespace EasyToolKit.Inspector.Editor
                 (ref object index) => serializedObject.targetObjects[(int)index],
                 null);
 
-            info._propertyResolverType = typeof(GenericPropertyResolver);
-
             return info;
-        }
-
-        public IPropertyResolver GetPreferencedChildrenResolver()
-        {
-            if (_propertyResolverType == null)
-            {
-                return new GenericPropertyResolver();
-            }
-
-            return _propertyResolverType.CreateInstance<IPropertyResolver>();
         }
 
         public MemberInfo TryGetMemberInfo()

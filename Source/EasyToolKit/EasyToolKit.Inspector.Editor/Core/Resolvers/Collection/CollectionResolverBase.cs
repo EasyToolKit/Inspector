@@ -6,16 +6,64 @@ namespace EasyToolKit.Inspector.Editor
 {
     public interface ICollectionResolver
     {
+        bool IsReadOnly { get; }
+        Type CollectionType { get; }
         Type ElementType { get; }
 
         void QueueInsertElement(int targetIndex, object value);
         void QueueRemoveElement(int targetIndex, object value);
     }
 
-    public abstract class CollectionResolverBase<TElement> : PropertyResolver, ICollectionResolver
+    public abstract class CollectionResolverBase<TCollection, TElement> : PropertyResolver, ICollectionResolver
+        where TCollection : IEnumerable<TElement>
     {
         private Action _changeAction;
+        private int _lastIsReadOnlyUpdateID;
+        private bool _isReadOnly;
+        private IPropertyValueEntry<TCollection> _valueEntry;
 
+        public IPropertyValueEntry<TCollection> ValueEntry
+        {
+            get
+            {
+                if (_valueEntry == null)
+                {
+                    _valueEntry = Property.ValueEntry as IPropertyValueEntry<TCollection>;
+                    if (_valueEntry == null)
+                    {
+                        Property.Update(true);
+                        _valueEntry = Property.ValueEntry as IPropertyValueEntry<TCollection>;
+                    }
+                }
+                return _valueEntry;
+            }
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                if (_lastIsReadOnlyUpdateID != Property.Tree.UpdatedID)
+                {
+                    _lastIsReadOnlyUpdateID = Property.Tree.UpdatedID;
+                    _isReadOnly = false;
+
+                    for (int i = 0; i < ValueEntry.Values.Count; i++)
+                    {
+                        var collection = ValueEntry.Values[i];
+                        if (IsReadOnlyCollection(collection))
+                        {
+                            _isReadOnly = true;
+                            break;
+                        }
+                    }
+                }
+
+                return _isReadOnly;
+            }
+        }
+
+        public Type CollectionType => typeof(TCollection);
         public Type ElementType => typeof(TElement);
 
         public void QueueInsertElement(int targetIndex, object value)
@@ -64,5 +112,7 @@ namespace EasyToolKit.Inspector.Editor
 
             return false;
         }
+
+        protected virtual bool IsReadOnlyCollection(TCollection collection) => false;
     }
 }

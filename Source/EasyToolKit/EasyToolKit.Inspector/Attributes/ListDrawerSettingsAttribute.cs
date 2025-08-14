@@ -28,6 +28,8 @@ namespace EasyToolKit.Inspector
         public string CustomRemoveIndexFunction { get; set; }
         public string CustomRemoveElementFunction { get; set; }
 
+        public bool IsReadOnly { get; set; }
+
         public bool IsDefinedExpanded => _expanded.HasValue;
 
         public ListDrawerSettingsAttribute()

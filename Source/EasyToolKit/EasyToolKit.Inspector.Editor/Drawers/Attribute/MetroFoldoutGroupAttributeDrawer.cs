@@ -1,5 +1,6 @@
 using EasyToolKit.Core;
 using EasyToolKit.Core.Editor;
+using EasyToolKit.Inspector.Editor.Internal;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,8 +9,6 @@ namespace EasyToolKit.Inspector.Editor
     [DrawerPriority(DrawerPriorityLevel.Attribute + 100)]
     public class MetroFoldoutGroupAttributeDrawer : EasyGroupAttributeDrawer<MetroFoldoutGroupAttribute>
     {
-        private static readonly GUIContent TempContent = new GUIContent();
-
         private static GUIStyle s_foldoutStyle;
 
         public static GUIStyle FoldoutStyle
@@ -79,7 +78,7 @@ namespace EasyToolKit.Inspector.Editor
             var labelText = _labelResolver.Resolve(resolveTarget);
 
             var foldoutRect = EditorGUILayout.GetControlRect(true, 30, FoldoutStyle);
-            Property.State.Expanded = EasyEditorGUI.Foldout(foldoutRect, Property.State.Expanded, TempContent.SetText(labelText), FoldoutStyle);
+            Property.State.Expanded = EasyEditorGUI.Foldout(foldoutRect, Property.State.Expanded, EditorHelper.TempContent(labelText), FoldoutStyle);
 
             EditorGUILayout.EndHorizontal();
 
