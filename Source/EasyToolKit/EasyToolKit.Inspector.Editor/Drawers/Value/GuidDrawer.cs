@@ -12,7 +12,14 @@ namespace EasyToolKit.Inspector.Editor
             var value = ValueEntry.SmartValue;
 
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(label, value.ToString("D"));
+            if (label == null)
+            {
+                EditorGUILayout.TextField(value.ToString("D"));
+            }
+            else
+            {
+                EditorGUILayout.TextField(label, value.ToString("D"));
+            }
             EditorGUI.EndDisabledGroup();
         }
     }

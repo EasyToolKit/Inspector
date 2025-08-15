@@ -337,34 +337,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8ee0cbebaea44444a62421129fa7eeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Transform: {fileID: 0}
-  Int2: 0
-  TestUnityEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  testList:
-  - Int1: 0
-    Int2: 0
-    String3: 
-    Class1:
-      Inttt: 0
-      TestEnum: 0
-      Transform: {fileID: 0}
-  - Int1: 0
-    Int2: 0
-    String3: 
-    Class1:
-      Inttt: 0
-      TestEnum: 0
-      Transform: {fileID: 0}
-  TestClass:
-    Int1: 61
-    Int2: 0
-    String3: 
-    Class1:
-      Inttt: 345345
-      TestEnum: 0
-      Transform: {fileID: 0}
+  JJ: 
 --- !u!4 &1076451576
 Transform:
   m_ObjectHideFlags: 0
@@ -409,34 +382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8ee0cbebaea44444a62421129fa7eeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Transform: {fileID: 0}
-  Int2: 0
-  TestUnityEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  testList:
-  - Int1: 11
-    Int2: 69
-    String3: 
-    Class1:
-      Inttt: 0
-      TestEnum: 0
-      Transform: {fileID: 0}
-  - Int1: 42
-    Int2: 0
-    String3: 
-    Class1:
-      Inttt: 0
-      TestEnum: 0
-      Transform: {fileID: 0}
-  TestClass:
-    Int1: 0
-    Int2: 0
-    String3: 
-    Class1:
-      Inttt: 345345
-      TestEnum: 0
-      Transform: {fileID: 0}
+  JJ: f3e001000000000000000000
 --- !u!4 &1433810479
 Transform:
   m_ObjectHideFlags: 0

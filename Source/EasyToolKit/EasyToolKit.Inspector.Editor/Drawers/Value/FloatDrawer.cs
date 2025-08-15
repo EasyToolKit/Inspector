@@ -9,7 +9,14 @@ namespace EasyToolKit.Inspector.Editor
         {
             var value = ValueEntry.SmartValue;
             EditorGUI.BeginChangeCheck();
-            value = EditorGUILayout.FloatField(label, value);
+            if (label == null)
+            {
+                value = EditorGUILayout.FloatField(value);
+            }
+            else
+            {
+                value = EditorGUILayout.FloatField(label, value);
+            }
 
             if (EditorGUI.EndChangeCheck())
             {

@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using EasyToolKit.Core;
 using EasyToolKit.Core.Editor;
 using EasyToolKit.Inspector.Editor.Internal;
 using EasyToolKit.ThirdParty.OdinSerializer;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +12,7 @@ namespace EasyToolKit.Inspector.Editor
     public static class CollectionDrawerStyles
     {
         private static GUIStyle s_metroHeaderLabelStyle;
+        private static GUIStyle s_listItemStyle;
         public static GUIStyle MetroHeaderLabelStyle
         {
             get
@@ -28,9 +28,11 @@ namespace EasyToolKit.Inspector.Editor
                 return s_metroHeaderLabelStyle;
             }
         }
+        public static readonly Color ItemSelectedBackgroundColor = Color.white * 1.2f;
+        public static readonly Color MetroItemSelectedBackgroundColor = Color.white * 1.1f;
 
-        public static Color MetroHeaderBackgroundColor = new Color(0.8f, 0.8f, 0.8f);
-        public static Color MetroItemBackgroundColor = new Color(0.9f, 0.9f, 0.9f);
+        public static readonly Color MetroHeaderBackgroundColor = new Color(0.8f, 0.8f, 0.8f);
+        public static readonly Color MetroItemBackgroundColor = new Color(0.9f, 0.9f, 0.9f);
 
         public static GUIStyle ListItemStyle = new GUIStyle(GUIStyle.none)
         {
@@ -43,157 +45,8 @@ namespace EasyToolKit.Inspector.Editor
         };
     }
 
-    class CollectionDrawerContext
+    public partial class CollectionDrawer<T>
     {
-        public int Count;
-    }
-
-    [DrawerPriority(DrawerPriorityLevel.Value + 9)]
-    public class CollectionDrawer<T> : EasyValueDrawer<T>
-    {
-        protected override bool CanDrawValueProperty(InspectorProperty property)
-        {
-            return property.ChildrenResolver is ICollectionResolver;
-        }
-
-        private ICollectionResolver _collectionResolver;
-        [CanBeNull] private IOrderedCollectionResolver _orderedCollectionResolver;
-        [CanBeNull] private ListDrawerSettingsAttribute _listDrawerSettings;
-        private bool _isListDrawerClassAttribute;
-        private bool _isReadOnly;
-        private LocalPersistentContext<CollectionDrawerContext> _context;
-
-        [CanBeNull] private ICodeValueResolver<Texture> _iconTextureGetterResolver;
-
-        [CanBeNull] private Action<object, object> _onAddedElementCallback;
-        [CanBeNull] private Action<object, object> _onRemovedElementCallback;
-
-        [CanBeNull] private Func<object, object> _customCreateElementFunction;
-        [CanBeNull] private Action<object, object> _customRemoveElementFunction;
-        [CanBeNull] private Action<object, int> _customRemoveIndexFunction;
-        [CanBeNull] private Func<object, int, string> _customIndexLabelFunction;
-
-        [CanBeNull] private ValueDropdownAttribute _valueDropdownAttribute;
-        [CanBeNull] private ICodeValueResolver<object> _valueDropdownOptionsGetterResolver;
-
-        private CollectionDrawerContext Context => _context.Value;
-
-        private string _error;
-
-        protected override void Initialize()
-        {
-            _collectionResolver = (ICollectionResolver)Property.ChildrenResolver;
-            _orderedCollectionResolver = Property.ChildrenResolver as IOrderedCollectionResolver;
-
-            _listDrawerSettings = Property.GetAttribute<MetroListDrawerSettingsAttribute>();
-            _valueDropdownAttribute = Property.GetAttribute<ValueDropdownAttribute>();
-            if (_listDrawerSettings == null)
-            {
-                _listDrawerSettings = Property.GetAttribute<ListDrawerSettingsAttribute>();
-            }
-
-            _isReadOnly = _collectionResolver.IsReadOnly || _listDrawerSettings?.IsReadOnly == true;
-
-            _context = this.GetPersistentContext(nameof(_context), new CollectionDrawerContext());
-
-            _isListDrawerClassAttribute = _listDrawerSettings != null && Property.GetAttributeSource(_listDrawerSettings) == AttributeSource.Type;
-            var listDrawerTargetType = _isListDrawerClassAttribute
-                ? Property.ValueEntry.ValueType
-                : Property.Parent.ValueEntry.ValueType;
-
-            if (_listDrawerSettings != null)
-            {
-                if (_listDrawerSettings is MetroListDrawerSettingsAttribute metroListDrawerSettings)
-                {
-                    if (metroListDrawerSettings.IconTextureGetter.IsNotNullOrEmpty())
-                    {
-                        _iconTextureGetterResolver = CodeValueResolver.Create<Texture>(metroListDrawerSettings.IconTextureGetter, listDrawerTargetType);
-                    }
-                }
-
-                try
-                {
-                    if (_listDrawerSettings.ShowIndexLabel && _listDrawerSettings.CustomIndexLabelFunction.IsNotNullOrEmpty())
-                    {
-                        var customIndexLabelFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomIndexLabelFunction, BindingFlagsHelper.All, typeof(int))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomIndexLabelFunction}' in '{listDrawerTargetType}'");
-                        _customIndexLabelFunction = (instance, index) =>
-                        {
-                            return (string)customIndexLabelFunction.Invoke(instance, new object[] { index });
-                        };
-                    }
-
-                    if (_listDrawerSettings.OnAddedElementCallback.IsNotNullOrEmpty())
-                    {
-                        var onAddedElementMethod = listDrawerTargetType.GetMethodEx(_listDrawerSettings.OnAddedElementCallback, BindingFlagsHelper.All, typeof(object))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.OnAddedElementCallback}' in '{listDrawerTargetType}'");
-
-                        _onAddedElementCallback = (instance, value) =>
-                        {
-                            onAddedElementMethod.Invoke(instance, new object[] { value });
-                        };
-                    }
-
-                    if (_listDrawerSettings.OnRemovedElementCallback.IsNotNullOrEmpty())
-                    {
-                        var onRemovedElementMethod = listDrawerTargetType.GetMethodEx(_listDrawerSettings.OnRemovedElementCallback, BindingFlagsHelper.All, typeof(object))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.OnRemovedElementCallback}' in '{listDrawerTargetType}'");
-
-                        _onRemovedElementCallback = (instance, value) =>
-                        {
-                            onRemovedElementMethod.Invoke(instance, new object[] { value });
-                        };
-                    }
-
-                    if (_listDrawerSettings.CustomCreateElementFunction.IsNotNullOrEmpty())
-                    {
-                        var customCreateElementFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomCreateElementFunction, BindingFlagsHelper.All)
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomCreateElementFunction}' in '{listDrawerTargetType}'");
-
-                        _customCreateElementFunction = instance =>
-                        {
-                            return customCreateElementFunction.Invoke(instance, null);
-                        };
-                    }
-
-                    if (_listDrawerSettings.CustomRemoveElementFunction.IsNotNullOrEmpty())
-                    {
-                        var customRemoveElementFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomRemoveElementFunction, BindingFlagsHelper.All)
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomRemoveElementFunction}' in '{listDrawerTargetType}'");
-
-                        _customRemoveElementFunction = (instance, value) =>
-                        {
-                            customRemoveElementFunction.Invoke(instance, new object[] { value });
-                        };
-                    }
-
-                    if (_listDrawerSettings.CustomRemoveIndexFunction.IsNotNullOrEmpty())
-                    {
-                        var customRemoveIndexFunction = listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomRemoveIndexFunction, BindingFlagsHelper.All, typeof(int))
-                            ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomRemoveIndexFunction}' in '{listDrawerTargetType}'");
-                        _customRemoveIndexFunction = (instance, index) =>
-                        {
-                            customRemoveIndexFunction.Invoke(instance, new object[] { index });
-                        };
-                    }
-                }
-                catch (Exception e)
-                {
-                    _error = e.Message;
-                }
-            }
-
-            var isValueDropdownClassAttribute = _valueDropdownAttribute != null && Property.GetAttributeSource(_valueDropdownAttribute) == AttributeSource.Type;
-            var valueDropdownTargetType = isValueDropdownClassAttribute
-                ? Property.ValueEntry.ValueType
-                : Property.Parent.ValueEntry.ValueType;
-
-            if (_valueDropdownAttribute != null)
-            {
-                _valueDropdownOptionsGetterResolver = CodeValueResolver.Create<object>(_valueDropdownAttribute.OptionsGetter, valueDropdownTargetType);
-            }
-        }
-
         protected override void DrawProperty(GUIContent label)
         {
             if (_error.IsNotNullOrEmpty())
@@ -216,18 +69,20 @@ namespace EasyToolKit.Inspector.Editor
 
             if (Event.current.type == EventType.Layout)
             {
-                Context.Count = Property.Children.Count;
+                _count = Property.Children.Count;
             }
             else
             {
                 var newCount = Property.Children.Count;
-                if (Context.Count > newCount)
+                if (_count > newCount)
                 {
-                    Context.Count = newCount;
+                    _count = newCount;
                 }
             }
 
-            EasyEditorGUI.BeginIndentedVertical(EasyGUIStyles.PropertyPadding);
+            var rect = EasyEditorGUI.BeginIndentedVertical(EasyGUIStyles.PropertyPadding);
+            _controlID = EditorGUIUtility.GetControlID(nameof(_controlID).GetHashCode(), FocusType.Keyboard, rect);
+            _dragDropControlID = EditorGUIUtility.GetControlID(nameof(_dragDropControlID).GetHashCode(), FocusType.Passive, rect);
 
             if (_listDrawerSettings is MetroListDrawerSettingsAttribute)
             {
@@ -253,7 +108,7 @@ namespace EasyToolKit.Inspector.Editor
 
             GUILayout.FlexibleSpace();
 
-            if (!_listDrawerSettings.HideAddButton && !_isReadOnly)
+            if (_listDrawerSettings?.HideAddButton != false && !_isReadOnly)
             {
                 var buttonRect = GUILayoutUtility.GetRect(22, 22, GUILayout.ExpandWidth(false));
                 if (EasyEditorGUI.ToolbarButton(buttonRect, EasyEditorIcons.Plus))
@@ -284,7 +139,7 @@ namespace EasyToolKit.Inspector.Editor
 
             GUILayout.FlexibleSpace();
 
-            if (!_listDrawerSettings.HideAddButton && !_isReadOnly)
+            if (_listDrawerSettings?.HideAddButton != false && !_isReadOnly)
             {
                 var btnRect = GUILayoutUtility.GetRect(
                     EasyEditorIcons.Plus.HighlightedContent,
@@ -312,7 +167,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             EasyEditorGUI.BeginVerticalList();
 
-            for (int i = 0; i < Context.Count; i++)
+            for (int i = 0; i < _count; i++)
             {
                 var child = Property.Children[i];
                 DrawItem(child, i);
@@ -325,10 +180,10 @@ namespace EasyToolKit.Inspector.Editor
         {
             EasyEditorGUI.BeginVerticalList();
 
-            for (int i = 0; i < Context.Count; i++)
+            for (int i = 0; i < _count; i++)
             {
                 var child = Property.Children[i];
-                DrawAwesomeItem(child, i);
+                DrawMetroItem(child, i);
             }
 
             EasyEditorGUI.EndVerticalList();
@@ -336,15 +191,28 @@ namespace EasyToolKit.Inspector.Editor
 
         private void DrawItem(InspectorProperty property, int index)
         {
+            var selected = _selectionList.Contains(index);
+
+            if (selected)
+            {
+                EasyGUIHelper.PushColor(CollectionDrawerStyles.ItemSelectedBackgroundColor);
+            }
             var rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.ListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
+            if (selected)
+            {
+                EasyGUIHelper.PopColor();
+            }
+
 
             var dragHandleRect = new Rect(rect.x + 4, rect.y + 2 + ((int)rect.height - 23) / 2, 20, 20);
 
             GUI.Label(dragHandleRect, EasyEditorIcons.List.InactiveTexture, GUIStyle.none);
 
+            HandlePreSelection(rect, index);
             DrawElementProperty(property, index);
+            HandlePostSelection(rect, index);
 
-            if (!_listDrawerSettings.HideRemoveButton && !_isReadOnly)
+            if (_listDrawerSettings?.HideRemoveButton == false && !_isReadOnly)
             {
                 var removeBtnRect = new Rect(dragHandleRect.x + rect.width - 22, dragHandleRect.y + 1, 14, 14);
                 if (EasyEditorGUI.IconButton(removeBtnRect, EasyEditorIcons.X))
@@ -363,9 +231,18 @@ namespace EasyToolKit.Inspector.Editor
             EasyEditorGUI.EndListItem();
         }
 
-        private void DrawAwesomeItem(InspectorProperty property, int index)
+        private void DrawMetroItem(InspectorProperty property, int index)
         {
-            EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroItemBackgroundColor);
+            var selected = _selectionList.Contains(index);
+
+            if (selected)
+            {
+                EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroItemSelectedBackgroundColor);
+            }
+            else
+            {
+                EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroItemBackgroundColor);
+            }
             var rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.MetroListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
             EasyGUIHelper.PopColor();
 
@@ -373,9 +250,11 @@ namespace EasyToolKit.Inspector.Editor
 
             GUI.Label(dragHandleRect, EasyEditorIcons.List.InactiveTexture, GUIStyle.none);
 
+            HandlePreSelection(rect, index);
             DrawElementProperty(property, index);
+            HandlePostSelection(rect, index);
 
-            if (!_listDrawerSettings.HideRemoveButton && !_isReadOnly)
+            if (_listDrawerSettings?.HideRemoveButton == false && !_isReadOnly)
             {
                 var removeBtnRect = new Rect(dragHandleRect.x + rect.width - 37, dragHandleRect.y - 5, 30, 30);
                 if (GUI.Button(removeBtnRect, GUIContent.none, "Button"))
@@ -404,7 +283,7 @@ namespace EasyToolKit.Inspector.Editor
 
         protected virtual void DrawElementProperty(InspectorProperty property, int index)
         {
-            if (_listDrawerSettings.ShowIndexLabel)
+            if (_listDrawerSettings?.ShowIndexLabel == true)
             {
                 string indexLabel;
                 if (_customIndexLabelFunction != null)

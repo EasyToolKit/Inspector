@@ -18,19 +18,14 @@ namespace EasyToolKit.Inspector.Editor
                 {
                     return typeof(IListResolver<,>).MakeGenericType(type, elementType).CreateInstance<IPropertyResolver>();
                 }
-                else if (type.IsImplementsOpenGenericType(typeof(IReadOnlyList<>)))
+
+                if (type.IsImplementsOpenGenericType(typeof(IReadOnlyList<>)))
                 {
                     return typeof(IReadOnlyListResolver<,>).MakeGenericType(type, elementType).CreateInstance<IPropertyResolver>();
                 }
-                else
-                {
-                    throw new NotImplementedException($"Not implemented {type}.");
-                }
             }
-            else
-            {
-                return new GenericPropertyResolver();
-            }
+
+            return new GenericPropertyResolver();
         }
     }
 }

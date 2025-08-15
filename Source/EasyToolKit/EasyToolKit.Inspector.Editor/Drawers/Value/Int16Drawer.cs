@@ -8,7 +8,16 @@ namespace EasyToolKit.Inspector.Editor
         protected override void DrawProperty(GUIContent label)
         {
             EditorGUI.BeginChangeCheck();
-            var value = EditorGUILayout.IntField(label, ValueEntry.SmartValue);
+
+            int value;
+            if (label == null)
+            {
+                value = EditorGUILayout.IntField(ValueEntry.SmartValue);
+            }
+            else
+            {
+                value = EditorGUILayout.IntField(label, ValueEntry.SmartValue);
+            }
 
             if (value < short.MinValue)
             {
