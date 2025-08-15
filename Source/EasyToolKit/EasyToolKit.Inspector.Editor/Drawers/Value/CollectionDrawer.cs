@@ -43,6 +43,11 @@ namespace EasyToolKit.Inspector.Editor
         };
     }
 
+    class CollectionDrawerContext
+    {
+        public int Count;
+    }
+
     [DrawerPriority(DrawerPriorityLevel.Value + 9)]
     public class CollectionDrawer<T> : EasyValueDrawer<T>
     {
@@ -56,6 +61,7 @@ namespace EasyToolKit.Inspector.Editor
         [CanBeNull] private ListDrawerSettingsAttribute _listDrawerSettings;
         private bool _isListDrawerClassAttribute;
         private bool _isReadOnly;
+        private LocalPersistentContext<CollectionDrawerContext> _context;
 
         [CanBeNull] private ICodeValueResolver<Texture> _iconTextureGetterResolver;
 
@@ -69,6 +75,8 @@ namespace EasyToolKit.Inspector.Editor
 
         [CanBeNull] private ValueDropdownAttribute _valueDropdownAttribute;
         [CanBeNull] private ICodeValueResolver<object> _valueDropdownOptionsGetterResolver;
+
+        private CollectionDrawerContext Context => _context.Value;
 
         private string _error;
 
@@ -85,6 +93,8 @@ namespace EasyToolKit.Inspector.Editor
             }
 
             _isReadOnly = _collectionResolver.IsReadOnly || _listDrawerSettings?.IsReadOnly == true;
+
+            _context = this.GetPersistentContext(nameof(_context), new CollectionDrawerContext());
 
             _isListDrawerClassAttribute = _listDrawerSettings != null && Property.GetAttributeSource(_listDrawerSettings) == AttributeSource.Type;
             var listDrawerTargetType = _isListDrawerClassAttribute
@@ -204,6 +214,19 @@ namespace EasyToolKit.Inspector.Editor
                 return;
             }
 
+            if (Event.current.type == EventType.Layout)
+            {
+                Context.Count = Property.Children.Count;
+            }
+            else
+            {
+                var newCount = Property.Children.Count;
+                if (Context.Count > newCount)
+                {
+                    Context.Count = newCount;
+                }
+            }
+
             EasyEditorGUI.BeginIndentedVertical(EasyGUIStyles.PropertyPadding);
 
             if (_listDrawerSettings is MetroListDrawerSettingsAttribute)
@@ -289,7 +312,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             EasyEditorGUI.BeginVerticalList();
 
-            for (int i = 0; i < Property.Children.Count; i++)
+            for (int i = 0; i < Context.Count; i++)
             {
                 var child = Property.Children[i];
                 DrawItem(child, i);
@@ -302,7 +325,7 @@ namespace EasyToolKit.Inspector.Editor
         {
             EasyEditorGUI.BeginVerticalList();
 
-            for (int i = 0; i < Property.Children.Count; i++)
+            for (int i = 0; i < Context.Count; i++)
             {
                 var child = Property.Children[i];
                 DrawAwesomeItem(child, i);
