@@ -108,7 +108,7 @@ namespace EasyToolKit.Inspector.Editor
                     child.Update();
                 }
 
-                Property.Children.Refresh();
+                Property.Children.Clear();
                 return true;
             }
 

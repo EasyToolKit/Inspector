@@ -12,7 +12,6 @@ namespace EasyToolKit.Inspector.Editor
     {
         private DropZoneHandle _dropZone;
         private bool _isDraggable;
-        private int? _insertAt;
         private bool _isAboutToDroppingUnityObjects;
         private bool _isDroppingUnityObjects;
 
@@ -65,7 +64,7 @@ namespace EasyToolKit.Inspector.Editor
             }
             else if (_isReadOnly == false)
             {
-                UnityEngine.Object[] droppedObjects = HandleUnityObjectsDrop();
+                var droppedObjects = HandleUnityObjectsDrop();
                 if (droppedObjects != null)
                 {
                     foreach (var obj in droppedObjects)

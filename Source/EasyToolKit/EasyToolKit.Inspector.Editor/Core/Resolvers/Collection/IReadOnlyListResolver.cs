@@ -7,13 +7,12 @@ namespace EasyToolKit.Inspector.Editor
     public class IReadOnlyListResolver<TCollection, TElement> : CollectionResolverBase<TCollection, TElement>
         where TCollection : IReadOnlyList<TElement>
     {
-        private int _minLength;
         private readonly Dictionary<int, InspectorPropertyInfo> _propertyInfosByIndex =
             new Dictionary<int, InspectorPropertyInfo>();
 
-        protected override void Initialize()
+        protected override void Deinitialize()
         {
-            _minLength = CalculateMinLength();
+            _propertyInfosByIndex.Clear();
         }
 
         public override int ChildNameToIndex(string name)
@@ -21,9 +20,18 @@ namespace EasyToolKit.Inspector.Editor
             throw new NotSupportedException();
         }
 
-        public override int GetChildCount()
+        public override int CalculateChildCount()
         {
-            return _minLength;
+            var minLength = int.MaxValue;
+            foreach (var value in ValueEntry.Values)
+            {
+                if (value == null)
+                {
+                    return 0;
+                }
+                minLength = Mathf.Min(minLength, value.Count);
+            }
+            return minLength;
         }
 
         public override InspectorPropertyInfo GetChildInfo(int childIndex)
@@ -59,27 +67,6 @@ namespace EasyToolKit.Inspector.Editor
         protected override bool IsReadOnlyCollection(TCollection collection)
         {
             return true;
-        }
-
-        protected override bool ApplyChanges()
-        {
-            var result = base.ApplyChanges();
-            _minLength = CalculateMinLength();
-            return result;
-        }
-
-        private int CalculateMinLength()
-        {
-            var minLength = int.MaxValue;
-            foreach (var value in ValueEntry.Values)
-            {
-                if (value == null)
-                {
-                    return 0;
-                }
-                minLength = Mathf.Min(minLength, value.Count);
-            }
-            return minLength;
         }
     }
 }

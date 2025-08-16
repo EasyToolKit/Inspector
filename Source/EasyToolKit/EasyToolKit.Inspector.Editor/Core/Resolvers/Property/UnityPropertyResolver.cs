@@ -93,7 +93,7 @@ namespace EasyToolKit.Inspector.Editor
             return _propertyInfos.FindIndex(info => info.PropertyName == name);
         }
 
-        public override int GetChildCount()
+        public override int CalculateChildCount()
         {
             return _propertyInfos.Count;
         }

@@ -47,8 +47,6 @@ namespace EasyToolKit.Inspector.Editor
                 _listDrawerSettings = Property.GetAttribute<ListDrawerSettingsAttribute>();
             }
 
-            _isReadOnly = _collectionResolver.IsReadOnly || _listDrawerSettings?.IsReadOnly == true;
-
             if (_listDrawerSettings != null)
             {
                 _isListDrawerClassAttribute = Property.GetAttributeSource(_listDrawerSettings) == AttributeSource.Type;

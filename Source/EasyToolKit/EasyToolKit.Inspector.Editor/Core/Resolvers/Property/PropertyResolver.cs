@@ -5,14 +5,16 @@ namespace EasyToolKit.Inspector.Editor
 {
     public interface IPropertyResolver : IInitializableResolver
     {
+        int ChildCount { get; }
         InspectorPropertyInfo GetChildInfo(int childIndex);
         int ChildNameToIndex(string name);
-        int GetChildCount();
         bool ApplyChanges();
     }
 
     public abstract class PropertyResolver : IPropertyResolver
     {
+        private int? _lastChildCountUpdateID;
+        private int _childCount;
         public InspectorProperty Property { get; private set; }
         public bool IsInitialized { get; private set; }
 
@@ -23,6 +25,19 @@ namespace EasyToolKit.Inspector.Editor
         }
 
         bool IInitializable.IsInitialized => IsInitialized;
+
+        public int ChildCount
+        {
+            get
+            {
+                if (_lastChildCountUpdateID != Property.Tree.UpdatedID)
+                {
+                    _lastChildCountUpdateID = Property.Tree.UpdatedID;
+                    _childCount = CalculateChildCount();
+                }
+                return _childCount;
+            }
+        }
 
         void IInitializable.Initialize()
         {
@@ -43,7 +58,7 @@ namespace EasyToolKit.Inspector.Editor
 
         public abstract InspectorPropertyInfo GetChildInfo(int childIndex);
         public abstract int ChildNameToIndex(string name);
-        public abstract int GetChildCount();
+        public abstract int CalculateChildCount();
 
         bool IPropertyResolver.ApplyChanges()
         {

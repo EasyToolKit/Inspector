@@ -389,7 +389,7 @@ namespace EasyToolKit.Core.Editor
             EditorGUILayout.EndVertical();
         }
 
-        public static Rect BeginListItem(bool allowHover, GUIStyle style, params GUILayoutOption[] options)
+        public static Rect BeginListItem(bool allowHover, GUIStyle style = null, params GUILayoutOption[] options)
         {
             currentListItemIndecies.Resize(Mathf.Max(currentListItemIndecies.Count, currentScope));
             int i = currentListItemIndecies[currentScope];

@@ -12,7 +12,7 @@ namespace EasyToolKit.Inspector.Editor
         public static readonly bool IsInstiatableType = typeof(TValue).IsInstantiable();
 
         public InspectorProperty Property { get; private set; }
-        private readonly TValue[] _values;
+        private TValue[] _values;
         private bool _firstUpdated = false;
 
         public bool Dirty { get; private set; }
@@ -145,6 +145,8 @@ namespace EasyToolKit.Inspector.Editor
 
         public void Dispose()
         {
+            Property = null;
+            _values = null;
         }
     }
 }

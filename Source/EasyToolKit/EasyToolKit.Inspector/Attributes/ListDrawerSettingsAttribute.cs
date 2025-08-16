@@ -17,7 +17,7 @@ namespace EasyToolKit.Inspector
 
         public bool? Draggable { get; set; }
 
-        public bool ShowIndexLabel { get; set; }
+        public bool? ShowIndexLabel { get; set; }
         public string CustomIndexLabelFunction { get; set; }
 
         public bool HideAddButton { get; set; }

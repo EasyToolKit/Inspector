@@ -46,10 +46,20 @@ namespace EasyToolKit.Inspector.Editor
         };
     }
 
+    class CollectionItemContext
+    {
+        public Rect RemoveBtnRect;
+        public Rect DragHandleRect;
+    }
+
     public partial class CollectionDrawer<T>
     {
         [CanBeNull] private ICodeValueResolver<Texture> _iconTextureGetterResolver;
         [CanBeNull] private Func<object, int, string> _customIndexLabelFunction;
+
+        private bool _hideRemoveButton;
+        private bool _hideAddButton;
+        private Vector2 _layoutMousePosition;
 
         private void InitializeDraw()
         {
@@ -63,7 +73,7 @@ namespace EasyToolKit.Inspector.Editor
                     }
                 }
 
-                if (_listDrawerSettings.ShowIndexLabel && _listDrawerSettings.CustomIndexLabelFunction.IsNotNullOrEmpty())
+                if (_listDrawerSettings.ShowIndexLabel != false && _listDrawerSettings.CustomIndexLabelFunction.IsNotNullOrEmpty())
                 {
                     var customIndexLabelFunction = _listDrawerTargetType.GetMethodEx(_listDrawerSettings.CustomIndexLabelFunction, BindingFlagsHelper.All, typeof(int))
                         ?? throw new Exception($"Cannot find method '{_listDrawerSettings.CustomIndexLabelFunction}' in '{_listDrawerTargetType}'");
@@ -83,10 +93,17 @@ namespace EasyToolKit.Inspector.Editor
                     };
                 }
             }
+
         }
 
         protected override void DrawProperty(GUIContent label)
         {
+            _isReadOnly = _collectionResolver.IsReadOnly || _listDrawerSettings?.IsReadOnly == true;
+            _hideRemoveButton = _listDrawerSettings?.HideRemoveButton == true || _isReadOnly;
+            _hideAddButton = _listDrawerSettings?.HideAddButton == true || _isReadOnly;
+            CollectionDrawerStyles.ListItemStyle.padding.left = _isDraggable ? 25 : 7;
+            CollectionDrawerStyles.ListItemStyle.padding.right = _hideRemoveButton ? 4 : 20;
+
             if (_error.IsNotNullOrEmpty())
             {
                 EasyEditorGUI.MessageBox(_error, MessageType.Error);
@@ -119,6 +136,7 @@ namespace EasyToolKit.Inspector.Editor
             }
 
             var rect = EasyEditorGUI.BeginIndentedVertical(EasyGUIStyles.PropertyPadding);
+            BeginDropZone();
             if (_listDrawerSettings is MetroListDrawerSettingsAttribute)
             {
                 DrawMetroHeader(label);
@@ -129,7 +147,9 @@ namespace EasyToolKit.Inspector.Editor
                 DrawHeader(label);
                 DrawItems();
             }
+            EndDropZone();
             EasyEditorGUI.EndIndentedVertical();
+            UpdateLogic();
         }
 
         private void DrawHeader(GUIContent label)
@@ -143,7 +163,7 @@ namespace EasyToolKit.Inspector.Editor
 
             GUILayout.FlexibleSpace();
 
-            if (_listDrawerSettings?.HideAddButton != false && !_isReadOnly)
+            if (!_hideAddButton)
             {
                 var buttonRect = GUILayoutUtility.GetRect(22, 22, GUILayout.ExpandWidth(false));
                 if (EasyEditorGUI.ToolbarButton(buttonRect, EasyEditorIcons.Plus))
@@ -155,170 +175,188 @@ namespace EasyToolKit.Inspector.Editor
             EasyEditorGUI.EndHorizontalToolbar();
         }
 
-        private void DrawMetroHeader(GUIContent label)
-        {
-            EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroHeaderBackgroundColor);
-            EasyEditorGUI.BeginHorizontalToolbar(30);
-            EasyGUIHelper.PopColor();
-
-            if (_iconTextureGetterResolver != null)
-            {
-                var iconTexture = _iconTextureGetterResolver.Resolve(Property.Parent.ValueEntry.WeakSmartValue);
-                GUILayout.Label(iconTexture, GUILayout.Width(30), GUILayout.Height(30));
-            }
-
-            if (label != null)
-            {
-                GUILayout.Label(label, CollectionDrawerStyles.MetroHeaderLabelStyle, GUILayout.Height(30));
-            }
-
-            GUILayout.FlexibleSpace();
-
-            if (_listDrawerSettings?.HideAddButton != false && !_isReadOnly)
-            {
-                var btnRect = GUILayoutUtility.GetRect(
-                    EasyEditorIcons.Plus.HighlightedContent,
-                    "Button",
-                    GUILayout.ExpandWidth(false),
-                    GUILayout.Width(30),
-                    GUILayout.Height(30));
-
-                if (GUI.Button(btnRect, GUIContent.none, "Button"))
-                {
-                    EasyGUIHelper.RemoveFocusControl();
-                    DoAddElement(btnRect);
-                }
-
-                if (Event.current.type == EventType.Repaint)
-                {
-                    EasyEditorIcons.Plus.Draw(btnRect.AlignCenter(25, 25));
-                }
-            }
-
-            EasyEditorGUI.EndHorizontalToolbar();
-        }
-
         private void DrawItems()
         {
-            EasyEditorGUI.BeginVerticalList();
+            int from = 0;
+            int to = _count;
+            var drawEmptySpace = _dropZone != null && _dropZone.IsBeingHovered || _isDroppingUnityObjects;
+            float height = drawEmptySpace ? _isDroppingUnityObjects ? 16 : (DragAndDropManager.CurrentDraggingHandle.Rect.height - 3) : 0;
+            var rect = EasyEditorGUI.BeginVerticalList();
 
-            for (int i = 0; i < _count; i++)
+            for (int i = 0, j = from, k = from; j < to; i++, j++)
             {
-                var child = Property.Children[i];
-                DrawItem(child, i);
-            }
-
-            EasyEditorGUI.EndVerticalList();
-        }
-
-        private void DrawMetroItems()
-        {
-            EasyEditorGUI.BeginVerticalList();
-
-            for (int i = 0; i < _count; i++)
-            {
-                var child = Property.Children[i];
-                DrawMetroItem(child, i);
-            }
-
-            EasyEditorGUI.EndVerticalList();
-        }
-
-        private void DrawItem(InspectorProperty property, int index)
-        {
-            Rect rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.ListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
-
-            var dragHandleRect = new Rect(rect.x + 4, rect.y + 2 + ((int)rect.height - 23) / 2, 20, 20);
-
-            GUI.Label(dragHandleRect, EasyEditorIcons.List.InactiveTexture, GUIStyle.none);
-
-            DrawElementProperty(property, index);
-
-            if (_listDrawerSettings?.HideRemoveButton == false && !_isReadOnly)
-            {
-                var removeBtnRect = new Rect(dragHandleRect.x + rect.width - 22, dragHandleRect.y + 1, 14, 14);
-                if (EasyEditorGUI.IconButton(removeBtnRect, EasyEditorIcons.X))
+                var dragHandle = BeginDragHandle(j, i);
                 {
-                    if (_orderedCollectionResolver != null)
+                    if (drawEmptySpace)
                     {
-                        DoRemoveElementAt(index);
+                        var topHalf = dragHandle.Rect;
+                        topHalf.height /= 2;
+                        if (topHalf.Contains(_layoutMousePosition) || topHalf.y > _layoutMousePosition.y && i == 0)
+                        {
+                            GUILayout.Space(height);
+                            drawEmptySpace = false;
+                            _insertAt = k;
+                        }
+                    }
+
+                    if (dragHandle.IsDragging == false)
+                    {
+                        k++;
+                        DrawItem(Property.Children[j], dragHandle, j);
                     }
                     else
                     {
-                        DoRemoveElement(property);
+                        GUILayout.Space(3);
+                        CollectionDrawerStaticContext.DelayedGUIDrawer.Begin(dragHandle.Rect.width, dragHandle.Rect.height, dragHandle.CurrentMethod != DragAndDropMethods.Move);
+                        DragAndDropManager.AllowDrop = false;
+                        DrawItem(Property.Children[j], dragHandle, j);
+                        DragAndDropManager.AllowDrop = true;
+                        CollectionDrawerStaticContext.DelayedGUIDrawer.End();
+                        if (dragHandle.CurrentMethod != DragAndDropMethods.Move)
+                        {
+                            GUILayout.Space(3);
+                        }
+                    }
+
+                    if (drawEmptySpace)
+                    {
+                        var bottomHalf = dragHandle.Rect;
+                        bottomHalf.height /= 2;
+                        bottomHalf.y += bottomHalf.height;
+
+                        if (bottomHalf.Contains(_layoutMousePosition) || bottomHalf.yMax < _layoutMousePosition.y && j + 1 == to)
+                        {
+                            GUILayout.Space(height);
+                            drawEmptySpace = false;
+                            _insertAt = Mathf.Min(k, to);
+                        }
                     }
                 }
+                EndDragHandle(i);
             }
 
-            EasyEditorGUI.EndListItem();
+            if (drawEmptySpace)
+            {
+                GUILayout.Space(height);
+                _insertAt = Event.current.mousePosition.y > rect.center.y ? to : from;
+            }
+
+            if (to == Property.Children.Count && Property.ValueEntry.IsConflicted())
+            {
+                EasyEditorGUI.BeginListItem(false);
+                GUILayout.Label(EditorHelper.TempContent("------"), EditorStyles.centeredGreyMiniLabel);
+                EasyEditorGUI.EndListItem();
+            }
+
+            EasyEditorGUI.EndVerticalList();
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                _layoutMousePosition = Event.current.mousePosition;
+            }
         }
 
-        private void DrawMetroItem(InspectorProperty property, int index)
+        private void DrawItem(InspectorProperty property, DragHandle dragHandle, int index)
         {
-            EasyGUIHelper.PushColor(CollectionDrawerStyles.MetroItemBackgroundColor);
-            var rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.MetroListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
-            EasyGUIHelper.PopColor();
-
-            var dragHandleRect = new Rect(rect.x + 4, rect.y + 2 + ((int)rect.height - 23) / 2, 23, 23);
-
-            GUI.Label(dragHandleRect, EasyEditorIcons.List.InactiveTexture, GUIStyle.none);
-
-            DrawElementProperty(property, index);
-
-            if (_listDrawerSettings?.HideRemoveButton == false && !_isReadOnly)
+            var itemContext = property.GetPersistentContext("ItemContext", new CollectionItemContext()).Value;
+            var rect = EasyEditorGUI.BeginListItem(false, CollectionDrawerStyles.ListItemStyle, GUILayout.MinHeight(25), GUILayout.ExpandWidth(true));
             {
-                var removeBtnRect = new Rect(dragHandleRect.x + rect.width - 37, dragHandleRect.y - 5, 30, 30);
-                if (GUI.Button(removeBtnRect, GUIContent.none, "Button"))
+                if (Event.current.type == EventType.Repaint && !_isReadOnly)
                 {
-                    EasyGUIHelper.RemoveFocusControl();
+                    dragHandle.DragHandleRect = new Rect(rect.x + 4, rect.y, 20, rect.height);
+                    itemContext.DragHandleRect = new Rect(rect.x + 4, rect.y + 2 + ((int)rect.height - 23) / 2, 20, 20);
+                    itemContext.RemoveBtnRect = new Rect(itemContext.DragHandleRect.x + rect.width - 22, itemContext.DragHandleRect.y + 1, 14, 14);
 
-                    if (_orderedCollectionResolver != null)
+                    if (_isDraggable)
                     {
-                        DoRemoveElementAt(index);
-                    }
-                    else
-                    {
-                        DoRemoveElement(property);
+                        GUI.Label(itemContext.DragHandleRect, EasyEditorIcons.List.InactiveTexture, GUIStyle.none);
                     }
                 }
 
-                if (Event.current.type == EventType.Repaint)
+                EasyGUIHelper.PushHierarchyMode(false);
+
+                DrawElementProperty(property, index);
+
+                EasyGUIHelper.PopHierarchyMode();
+
+                if (!_hideRemoveButton)
                 {
-                    EasyEditorIcons.X.Draw(removeBtnRect.AlignCenter(25, 25));
+                    if (EasyEditorGUI.IconButton(itemContext.RemoveBtnRect, EasyEditorIcons.X))
+                    {
+                        if (_orderedCollectionResolver != null)
+                        {
+                            if (index >= 0)
+                            {
+                                _removeAt = index;
+                            }
+                        }
+                        else
+                        {
+                            var values = new object[property.ValueEntry.ValueCount];
+
+                            for (int i = 0; i < values.Length; i++)
+                            {
+                                values[i] = property.ValueEntry.WeakValues[i];
+                            }
+
+                            _removeValues = values;
+                        }
+                    }
                 }
             }
-
-
             EasyEditorGUI.EndListItem();
         }
 
         protected virtual void DrawElementProperty(InspectorProperty property, int index)
         {
-            if (_listDrawerSettings?.ShowIndexLabel == true)
+            GUIContent label = null;
+
+            if (_listDrawerSettings?.ShowIndexLabel != false)
             {
-                string indexLabel;
-                if (_customIndexLabelFunction != null)
+                label = new GUIContent(index.ToString());
+            }
+
+            if (_customIndexLabelFunction != null)
+            {
+                var value = property.ValueEntry.WeakSmartValue;
+
+                if (object.ReferenceEquals(value, null))
                 {
-                    var target = _isListDrawerClassAttribute ? Property.ValueEntry.WeakSmartValue : Property.Parent.ValueEntry.WeakSmartValue;
-                    indexLabel = _customIndexLabelFunction(target, index);
+                    if (label == null)
+                    {
+                        label = new GUIContent("Null");
+                    }
+                    else
+                    {
+                        label.text += " : Null";
+                    }
                 }
                 else
                 {
-                    indexLabel = $"{index}:";
+                    label = label ?? new GUIContent("");
+                    if (label.text != "") label.text += " : ";
+
+                    var target = _isListDrawerClassAttribute ? Property.ValueEntry.WeakSmartValue : Property.Parent.ValueEntry.WeakSmartValue;
+                    object text = _customIndexLabelFunction(target, index);
+                    label.text += (text == null ? "" : text.ToString());
                 }
+            }
+
+            if (label != null)
+            {
                 if (property.Children != null)
                 {
-                    property.State.Expanded = EasyEditorGUI.Foldout(property.State.Expanded, EditorHelper.TempContent(indexLabel));
+                    property.State.Expanded = EasyEditorGUI.Foldout(property.State.Expanded, label);
                     if (property.State.Expanded)
                     {
                         EditorGUI.indentLevel++;
-                        property.Draw(null);
+                        property.Draw();
                         EditorGUI.indentLevel--;
                     }
                 }
                 else
                 {
-                    property.Draw(EditorHelper.TempContent(indexLabel));
+                    property.Draw(label);
                 }
             }
             else

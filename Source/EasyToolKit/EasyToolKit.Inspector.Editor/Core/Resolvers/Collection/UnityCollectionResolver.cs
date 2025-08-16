@@ -57,7 +57,7 @@ namespace EasyToolKit.Inspector.Editor
             throw new NotSupportedException();
         }
 
-        public override int GetChildCount()
+        public override int CalculateChildCount()
         {
             return _serializedProperty.arraySize;
         }
@@ -91,11 +91,6 @@ namespace EasyToolKit.Inspector.Editor
         protected override void RemoveElementAt(int targetIndex, int index)
         {
             _serializedProperty.DeleteArrayElementAtIndex(index);
-        }
-
-        protected override void MoveElemenetAt(int targetIndex, int sourceIndex, int destinationIndex)
-        {
-            _serializedProperty.MoveArrayElement(sourceIndex, destinationIndex);
         }
     }
 }

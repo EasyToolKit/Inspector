@@ -19,6 +19,10 @@ namespace EasyToolKit.Inspector.Editor
 
         [CanBeNull] private ICodeValueResolver<object> _valueDropdownOptionsGetterResolver;
 
+        private int? _insertAt;
+        private int? _removeAt;
+        private object[] _removeValues;
+
         private void InitializeLogic()
         {
             if (_listDrawerSettings != null)
@@ -71,6 +75,71 @@ namespace EasyToolKit.Inspector.Editor
             if (_valueDropdownAttribute != null)
             {
                 _valueDropdownOptionsGetterResolver = CodeValueResolver.Create<object>(_valueDropdownAttribute.OptionsGetter, _valueDropdownTargetType);
+            }
+        }
+
+        private void UpdateLogic()
+        {
+            if (_orderedCollectionResolver != null)
+            {
+                if (_removeAt != null && Event.current.type == EventType.Repaint)
+                {
+                    try
+                    {
+                        if (_customRemoveIndexFunction != null)
+                        {
+                            foreach (var parent in Property.Parent.ValueEntry.WeakValues)
+                            {
+                                _customRemoveIndexFunction(
+                                    parent,
+                                    _removeAt.Value);
+                            }
+                        }
+                        else if (_customRemoveElementFunction != null)
+                        {
+                            for (int i = 0; i < Property.Parent.ValueEntry.ValueCount; i++)
+                            {
+                                _customRemoveElementFunction(
+                                    Property.Parent.ValueEntry.WeakValues[i],
+                                    Property.Children[_removeAt.Value].ValueEntry.WeakValues[i]);
+                            }
+                        }
+                        else
+                        {
+                            DoRemoveElementAt(_removeAt.Value);
+                        }
+                    }
+                    finally
+                    {
+                        _removeAt = null;
+                    }
+
+                    EasyGUIHelper.RequestRepaint();
+                }
+            }
+            else if (_removeValues != null && Event.current.type == EventType.Repaint)
+            {
+                try
+                {
+                    if (_customRemoveElementFunction != null)
+                    {
+                        for (int i = 0; i < Property.Parent.ValueEntry.ValueCount; i++)
+                        {
+                            _customRemoveElementFunction(
+                                Property.Parent.ValueEntry.WeakValues[i],
+                                _removeValues[i]);
+                        }
+                    }
+                    else
+                    {
+                        DoRemoveElement(_removeValues);
+                    }
+                }
+                finally
+                {
+                    _removeValues = null;
+                }
+                EasyGUIHelper.RequestRepaint();
             }
         }
 
@@ -182,8 +251,21 @@ namespace EasyToolKit.Inspector.Editor
 
         protected virtual void DoRemoveElement(int targetIndex, InspectorProperty propertyToRemove)
         {
-            var parent = Property.Parent.ValueEntry.WeakValues[targetIndex];
             var valueToRemove = propertyToRemove.ValueEntry.WeakValues[targetIndex];
+            DoRemoveElement(targetIndex, valueToRemove);
+        }
+
+        private void DoRemoveElement(object[] values)
+        {
+            for (int i = 0; i < Property.Tree.Targets.Length; i++)
+            {
+                DoRemoveElement(i, values[i]);
+            }
+        }
+
+        private void DoRemoveElement(int targetIndex, object valueToRemove)
+        {
+            var parent = Property.Parent.ValueEntry.WeakValues[targetIndex];
             if (_customRemoveElementFunction != null)
             {
                 _customRemoveElementFunction.Invoke(parent, valueToRemove);

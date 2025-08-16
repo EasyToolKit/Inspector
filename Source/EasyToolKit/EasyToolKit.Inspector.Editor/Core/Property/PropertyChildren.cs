@@ -6,11 +6,11 @@ using UnityEditor;
 
 namespace EasyToolKit.Inspector.Editor
 {
-    public class PropertyChildren
+    public class PropertyChildren : IDisposable
     {
-        private readonly InspectorProperty _property;
+        private InspectorProperty _property;
         private readonly Dictionary<int, InspectorProperty> _childrenByIndex = new Dictionary<int, InspectorProperty>();
-        public int Count => _property.ChildrenResolver.GetChildCount();
+        public int Count => _property.ChildrenResolver.ChildCount;
 
         public InspectorProperty this[int index] => Get(index);
         public InspectorProperty this[string name] => Get(name);
@@ -64,11 +64,6 @@ namespace EasyToolKit.Inspector.Editor
         {
         }
 
-        public void Refresh()
-        {
-            _childrenByIndex.Clear();
-        }
-
         public IEnumerable<InspectorProperty> Recurse()
         {
             for (var i = 0; i < Count; i++)
@@ -84,6 +79,21 @@ namespace EasyToolKit.Inspector.Editor
                     }
                 }
             }
+        }
+
+        public void Clear()
+        {
+            foreach (var child in _childrenByIndex)
+            {
+                child.Value.Dispose();
+            }
+            _childrenByIndex.Clear();
+        }
+
+        public void Dispose()
+        {
+            Clear();
+            _property = null;
         }
     }
 }

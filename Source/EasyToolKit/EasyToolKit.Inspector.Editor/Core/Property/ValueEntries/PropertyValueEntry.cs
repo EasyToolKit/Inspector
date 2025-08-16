@@ -11,8 +11,8 @@ namespace EasyToolKit.Inspector.Editor
         private bool? _isConflictedCache;
         private int? _lastUpdateID;
         private Type _runtimeValueType;
-        public InspectorProperty Property { get; }
-        public IPropertyValueCollection<TValue> Values { get; }
+        public InspectorProperty Property { get; private set; }
+        public IPropertyValueCollection<TValue> Values { get; private set; }
 
         public PropertyValueEntry(InspectorProperty property)
         {
@@ -201,6 +201,8 @@ namespace EasyToolKit.Inspector.Editor
         public void Dispose()
         {
             Values.Dispose();
+            Property = null;
+            Values = null;
         }
     }
 }

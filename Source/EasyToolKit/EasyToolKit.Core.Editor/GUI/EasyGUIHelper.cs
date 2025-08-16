@@ -41,7 +41,6 @@ namespace EasyToolKit.Core.Editor
         private static readonly Func<MessageType, Texture> HelpIconGetter;
         private static int numberOfFramesToRepaint;
         private static float betterContextWidth;
-        private static object prevHostView;
 
         static EasyGUIHelper()
         {
@@ -105,18 +104,22 @@ namespace EasyToolKit.Core.Editor
             get
             {
                 var view = GUIViewGetter();
+                if (view == null)
+                {
+                    return null;
+                }
 
                 // For some reason this only seems to happen on Mac machines as well.
                 // In rare instances, such as when the user has clicked the eye dropper on a color field,
                 // the current view will not be a type of HostView.
                 // We can only get the current EditorWindow from a HostView, so we'll keep the last HostView
                 // we found, and then use that reference when we don't get a HostView.
-                if (HostViewType.IsAssignableFrom(view.GetType()))
+                if (!HostViewType.IsAssignableFrom(view.GetType()))
                 {
-                    prevHostView = view;
+                    return null;
                 }
 
-                return ActualViewGetter(prevHostView);
+                return ActualViewGetter(view);
             }
         }
 
@@ -326,6 +329,10 @@ namespace EasyToolKit.Core.Editor
         public static void RequestRepaint()
         {
             numberOfFramesToRepaint = Math.Max(numberOfFramesToRepaint, 2);
+        }
+        public static void RequestRepaint(int numberOfFramesToRepaint)
+        {
+            numberOfFramesToRepaint = Math.Max(numberOfFramesToRepaint, numberOfFramesToRepaint);
         }
 
         public static void PushIndentLevel(int indentLevel)

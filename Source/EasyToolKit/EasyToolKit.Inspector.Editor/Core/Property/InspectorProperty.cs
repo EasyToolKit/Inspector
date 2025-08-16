@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace EasyToolKit.Inspector.Editor
 {
-    public class InspectorProperty
+    public class InspectorProperty : IDisposable
     {
         private string _niceName;
         private PropertyState _state;
@@ -21,10 +21,10 @@ namespace EasyToolKit.Inspector.Editor
         private bool? _isAllowChildren;
 
         public InspectorProperty Parent { get; private set; }
-        public PropertyTree Tree { get; }
+        public PropertyTree Tree { get; private set; }
 
         [CanBeNull] public PropertyChildren Children { get; private set; }
-        public InspectorPropertyInfo Info { get; }
+        public InspectorPropertyInfo Info { get; private set; }
 
         public PropertyState State
         {
@@ -303,7 +303,7 @@ namespace EasyToolKit.Inspector.Editor
 
             if (Children != null)
             {
-                Children.Refresh();
+                Children.Clear();
             }
         }
 
@@ -428,6 +428,42 @@ namespace EasyToolKit.Inspector.Editor
         public override string ToString()
         {
             return $"{Path}";
+        }
+
+        public void Dispose()
+        {
+            if (_childrenResolver?.IsInitialized == true)
+            {
+                _childrenResolver.Deinitialize();
+                _childrenResolver = null;
+            }
+            if (_drawerChainResolver?.IsInitialized == true)
+            {
+                _drawerChainResolver.Deinitialize();
+                _drawerChainResolver = null;
+            }
+            if (_attributeResolver?.IsInitialized == true)
+            {
+                _attributeResolver.Deinitialize();
+                _attributeResolver = null;
+            }
+            if (_groupResolver?.IsInitialized == true)
+            {
+                _groupResolver.Deinitialize();
+                _groupResolver = null;
+            }
+            BaseValueEntry?.Dispose();
+            if (ValueEntry != BaseValueEntry)
+            {
+                ValueEntry?.Dispose();
+                ValueEntry = null;
+            }
+            Children?.Dispose();
+            BaseValueEntry = null;
+            Children = null;
+            Info = null;
+            Tree = null;
+            Parent = null;
         }
     }
 }
