@@ -62,7 +62,7 @@ namespace EasyToolKit.Inspector.Editor
             return _serializedProperty.arraySize;
         }
 
-        protected override void InsertElement(int targetIndex, TElement value)
+        protected override void AddElement(int targetIndex, TElement value)
         {
             InsertElementAt(targetIndex, _serializedProperty.arraySize, value);
         }

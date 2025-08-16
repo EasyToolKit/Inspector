@@ -4,6 +4,257 @@
         <name>EasyToolKit.Core.Editor</name>
     </assembly>
     <members>
+        <member name="T:EasyToolKit.Core.Editor.DragAndDropManager">
+            <summary>
+            <para>This class is due to undergo refactoring. Use the new DragAndDropUtilities instead.</para>
+            </summary>
+            <seealso cref="!:DragAndDropUtilities"/>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragAndDropManager.CurrentDraggingHandle">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragAndDropManager.CurrentHoveringDropZone">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragAndDropManager.IsDragInProgress">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragAndDropManager.IsHoveringDropZone">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragAndDropManager.AllowDrop">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.BeginDropZone``1(System.Object)">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.BeginDropZone``1(System.Object,System.Boolean)">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.BeginDropZone(System.Object,System.Type,System.Boolean)">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.EndDropZone">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.BeginDragHandle(System.Object,System.Object,EasyToolKit.Core.Editor.DragAndDropMethods)">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.BeginDragHandle(System.Object,System.Object,System.Boolean,EasyToolKit.Core.Editor.DragAndDropMethods)">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DragAndDropManager.EndDragHandle">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragAndDropManager.guiState">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragAndDropMethods.Reference">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragAndDropMethods.Move">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragAndDropMethods.Copy">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="T:EasyToolKit.Core.Editor.DragHandle">
+            <summary>
+            This class is due to undergo refactoring.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragHandle.SourceWindow">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.IsCrossWindowDrag">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.Rect">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.DraggingScreenRect">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.Object">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.DragAndDropMethod">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.OnDragStarted">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.OnDragFinnished">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.IsDragging">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.IsHovering">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.CurrentMethod">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.MouseDownPostionOffset">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DragHandle.DragHandleRect">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DragHandle.Enabled">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropEvents.None">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropEvents.Referenced">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropEvents.Moved">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropEvents.Copied">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropEvents.Canceled">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="T:EasyToolKit.Core.Editor.DropZoneHandle">
+            <summary>
+            This class is due to undergo refactoring.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.IsAccepted">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.IsBeingHovered">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropZoneHandle.SourceWindow">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.Rect">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.Type">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.LayoutDepth">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.CanAcceptMove">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.IsCrossWindowDrag">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.DropZoneHandle.IsReadyToClaim">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="F:EasyToolKit.Core.Editor.DropZoneHandle.Enabled">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.DropZoneHandle.ClaimObject">
+            <summary>
+            Not yet documented.
+            </summary>
+        </member>
+        <member name="T:EasyToolKit.Core.Editor.OnDragFinnished">
+            <summary>
+            This class is due to undergo refactoring.
+            </summary>
+        </member>
         <member name="M:EasyToolKit.Core.Editor.EasyEditorGUI.BeginIndentedVertical(UnityEngine.GUIStyle,UnityEngine.GUILayoutOption[])">
             <summary>
             Begins a vertical indentation. Remember to end with <see cref="M:EasyToolKit.Core.Editor.EasyEditorGUI.EndIndentedVertical"/>.
@@ -71,12 +322,44 @@
             <param name="color">The color of the line.</param>
             <param name="lineWidth">The size of the line.</param>
         </member>
+        <member name="P:EasyToolKit.Core.Editor.EasyGUIHelper.CurrentWindow">
+            <summary>
+            Gets the current editor window.
+            </summary>
+            <value>
+            The current editor window.
+            </value>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.EasyGUIHelper.CurrentWindowHasFocus">
+            <summary>
+            Gets a value indicating whether the current editor window is focused.
+            </summary>
+            <value>
+            <c>true</c> if the current window has focus. Otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.EasyGUIHelper.MouseScreenPosition">
+            <summary>
+            Gets the mouse screen position.
+            </summary>
+            <value>
+            The mouse screen position.
+            </value>
+        </member>
         <member name="P:EasyToolKit.Core.Editor.EasyGUIHelper.CurrentIndentAmount">
             <summary>
             Gets the current indent amount.
             </summary>
             <value>
             The current indent amount.
+            </value>
+        </member>
+        <member name="P:EasyToolKit.Core.Editor.EasyGUIHelper.EditorScreenPointOffset">
+            <summary>
+            Gets the editor screen point offset.
+            </summary>
+            <value>
+            The editor screen point offset.
             </value>
         </member>
         <member name="P:EasyToolKit.Core.Editor.EasyGUIHelper.ContextWidth">
@@ -101,6 +384,17 @@
             <summary>
             Gets or sets the actual EditorGUIUtility.LabelWidth, regardless of the current hierarchy mode or context width.
             </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.EasyGUIHelper.BeginLayoutMeasuring">
+            <summary>
+            Begins the layout measuring. Remember to end with <see cref="M:EasyToolKit.Core.Editor.EasyGUIHelper.EndLayoutMeasuring"/>.
+            </summary>
+        </member>
+        <member name="M:EasyToolKit.Core.Editor.EasyGUIHelper.EndLayoutMeasuring">
+            <summary>
+            Ends the layout measuring started by <see cref="M:EasyToolKit.Core.Editor.EasyGUIHelper.BeginLayoutMeasuring"/>
+            </summary>
+            <returns>The measured rect.</returns>
         </member>
         <member name="M:EasyToolKit.Core.Editor.EasyGUIHelper.PushGUIEnabled(System.Boolean)">
             <summary>

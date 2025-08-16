@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 
 namespace EasyToolKit.Inspector.Editor
@@ -10,7 +11,7 @@ namespace EasyToolKit.Inspector.Editor
         Type CollectionType { get; }
         Type ElementType { get; }
 
-        void QueueInsertElement(int targetIndex, object value);
+        void QueueAddElement(int targetIndex, object value);
         void QueueRemoveElement(int targetIndex, object value);
     }
 
@@ -66,9 +67,9 @@ namespace EasyToolKit.Inspector.Editor
         public Type CollectionType => typeof(TCollection);
         public Type ElementType => typeof(TElement);
 
-        public void QueueInsertElement(int targetIndex, object value)
+        public void QueueAddElement(int targetIndex, object value)
         {
-            EnqueueChange(() => InsertElement(targetIndex, (TElement)value));
+            EnqueueChange(() => AddElement(targetIndex, (TElement)value));
         }
 
         public void QueueRemoveElement(int targetIndex, object value)
@@ -76,7 +77,8 @@ namespace EasyToolKit.Inspector.Editor
             EnqueueChange(() => RemoveElement(targetIndex, (TElement)value));
         }
 
-        protected abstract void InsertElement(int targetIndex, TElement value);
+
+        protected abstract void AddElement(int targetIndex, TElement value);
         protected abstract void RemoveElement(int targetIndex, TElement value);
 
         protected void EnqueueChange(Action action)

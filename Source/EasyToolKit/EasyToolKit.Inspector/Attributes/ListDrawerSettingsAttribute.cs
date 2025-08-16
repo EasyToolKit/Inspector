@@ -15,6 +15,8 @@ namespace EasyToolKit.Inspector
             set => _expanded = value;
         }
 
+        public bool? Draggable { get; set; }
+
         public bool ShowIndexLabel { get; set; }
         public string CustomIndexLabelFunction { get; set; }
 

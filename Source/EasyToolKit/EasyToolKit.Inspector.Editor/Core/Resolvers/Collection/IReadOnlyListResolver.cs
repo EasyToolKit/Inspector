@@ -46,7 +46,7 @@ namespace EasyToolKit.Inspector.Editor
             return info;
         }
 
-        protected override void InsertElement(int targetIndex, TElement value)
+        protected override void AddElement(int targetIndex, TElement value)
         {
             throw new NotSupportedException("Readonly list cannot be modified");
         }

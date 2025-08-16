@@ -46,7 +46,7 @@ namespace EasyToolKit.Inspector.Editor
             return info;
         }
 
-        protected override void InsertElement(int targetIndex, TElement value)
+        protected override void AddElement(int targetIndex, TElement value)
         {
             var collection = ValueEntry.Values[targetIndex];
             collection.Add(value);

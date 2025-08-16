@@ -193,6 +193,11 @@ namespace EasyToolKit.Core
             return type.IsBasic() || type.IsUnityObject();
         }
 
+        public static bool IsNullableType(this Type type)
+        {
+            return !(type.IsPrimitive || type.IsValueType || type.IsEnum);
+        }
+
         public static MethodInfo GetMethodEx(this Type type, string methodName, BindingFlags flags, params Type[] argTypes)
         {
             return type.GetMethods(flags).FirstOrDefault(m =>

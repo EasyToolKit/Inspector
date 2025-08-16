@@ -86,8 +86,9 @@ namespace EasyToolKit.Core
                 method.GetParameters().Select(x => $"{TypeExtensions.GetAliases(x.ParameterType)} {x.Name}"));
         }
 
-        public static Type GetMemberType(this MemberInfo member)
+        public static Type GetMemberType([NotNull] this MemberInfo member)
         {
+            if (member == null) throw new ArgumentNullException(nameof(member));
             if (member is FieldInfo field)
             {
                 return field.FieldType;
@@ -106,8 +107,9 @@ namespace EasyToolKit.Core
             throw new NotSupportedException();
         }
 
-        public static Func<object> GetStaticMemberValueGetter(this MemberInfo memberInfo)
+        public static Func<object> GetStaticMemberValueGetter([NotNull] this MemberInfo memberInfo)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateWeakStaticFieldGetter(fieldInfo);
@@ -127,8 +129,9 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get static member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static Action<object> GetStaticMemberValueSetter(this MemberInfo memberInfo)
+        public static Action<object> GetStaticMemberValueSetter([NotNull] this MemberInfo memberInfo)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateWeakStaticFieldSetter(fieldInfo);
@@ -143,8 +146,10 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get static member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static WeakValueGetter GetInstanceMemberValueGetter(this MemberInfo memberInfo, Type instanceType)
+        public static WeakValueGetter GetInstanceMemberValueGetter([NotNull] this MemberInfo memberInfo, [NotNull] Type instanceType)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
+            if (instanceType == null) throw new ArgumentNullException(nameof(instanceType));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateWeakInstanceFieldGetter(instanceType, fieldInfo);
@@ -164,8 +169,10 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get instance member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static WeakValueSetter GetInstanceMemberValueSetter(this MemberInfo memberInfo, Type instanceType)
+        public static WeakValueSetter GetInstanceMemberValueSetter([NotNull] this MemberInfo memberInfo, [NotNull] Type instanceType)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
+            if (instanceType == null) throw new ArgumentNullException(nameof(instanceType));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateWeakInstanceFieldSetter(instanceType, fieldInfo);
@@ -179,8 +186,9 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get instance member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static Func<T> GetStaticMemberValueGetter<T>(this MemberInfo memberInfo)
+        public static Func<T> GetStaticMemberValueGetter<T>([NotNull] this MemberInfo memberInfo)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateStaticFieldGetter<T>(fieldInfo);
@@ -199,8 +207,9 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get instance member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static Action<T> GetStaticMemberValueSetter<T>(this MemberInfo memberInfo)
+        public static Action<T> GetStaticMemberValueSetter<T>([NotNull] this MemberInfo memberInfo)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateStaticFieldSetter<T>(fieldInfo);
@@ -214,8 +223,9 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get instance member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static ValueGetter<TInstance, TValue> GetInstanceMemberValueGetter<TInstance, TValue>(this MemberInfo memberInfo)
+        public static ValueGetter<TInstance, TValue> GetInstanceMemberValueGetter<TInstance, TValue>([NotNull] this MemberInfo memberInfo)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateInstanceFieldGetter<TInstance, TValue>(fieldInfo);
@@ -235,8 +245,9 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get instance member value getter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static ValueSetter<TInstance, TValue> GetInstanceMemberValueSetter<TInstance, TValue>(this MemberInfo memberInfo)
+        public static ValueSetter<TInstance, TValue> GetInstanceMemberValueSetter<TInstance, TValue>([NotNull] this MemberInfo memberInfo)
         {
+            if (memberInfo == null) throw new ArgumentNullException(nameof(memberInfo));
             if (memberInfo is FieldInfo fieldInfo)
             {
                 return EmitUtilities.CreateInstanceFieldSetter<TInstance, TValue>(fieldInfo);
@@ -250,23 +261,27 @@ namespace EasyToolKit.Core
             throw new NotSupportedException($"Can't get instance member value setter for '{memberInfo.DeclaringType}.{memberInfo.Name}'");
         }
 
-        public static Action GetStaticMethodCaller(this MethodInfo methodInfo)
+        public static Action GetStaticMethodCaller([NotNull] this MethodInfo methodInfo)
         {
+            if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             return EmitUtilities.CreateStaticMethodCaller(methodInfo);
         }
 
-        public static Action<object> GetInstanceMethodCaller(this MethodInfo methodInfo)
+        public static Action<object> GetInstanceMethodCaller([NotNull] this MethodInfo methodInfo)
         {
+            if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             return EmitUtilities.CreateWeakInstanceMethodCaller(methodInfo);
         }
 
-        public static Action<T> GetInstanceMethodCaller<T>(this MethodInfo methodInfo)
+        public static Action<T> GetInstanceMethodCaller<T>([NotNull] this MethodInfo methodInfo)
         {
+            if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             return EmitUtilities.CreateInstanceMethodCaller<T>(methodInfo);
         }
 
-        public static Action<T, TArg1> GetInstanceMethodCaller<T, TArg1>(this MethodInfo methodInfo)
+        public static Action<T, TArg1> GetInstanceMethodCaller<T, TArg1>([NotNull] this MethodInfo methodInfo)
         {
+            if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             return EmitUtilities.CreateInstanceMethodCaller<T, TArg1>(methodInfo);
         }
     }

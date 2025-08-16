@@ -4,6 +4,8 @@ namespace EasyToolKit.Core
 {
     public static class BindingFlagsHelper
     {
+        public static readonly BindingFlags AnyVisibility = BindingFlags.Public | BindingFlags.NonPublic;
+
         public static readonly BindingFlags Public = BindingFlags.Public;
 
         public static readonly BindingFlags NonPublic = BindingFlags.NonPublic;
@@ -24,7 +26,7 @@ namespace EasyToolKit.Core
 
         public static readonly BindingFlags AllStatic = Public | NonPublicStatic;
 
-        public static readonly BindingFlags All = AllInstance | AllStatic;
+        public static readonly BindingFlags All = AllInstance | AllStatic | BindingFlags.FlattenHierarchy;
 
         public static readonly BindingFlags AllPublic = PublicInstance | PublicStatic;
 

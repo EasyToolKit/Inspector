@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using EasyToolKit.ThirdParty.OdinSerializer.Utilities;
@@ -18,7 +19,16 @@ namespace EasyToolKit.Core.Editor
         private static readonly GUIScopeStack<bool> HierarchyModeStack = new GUIScopeStack<bool>();
         private static readonly GUIScopeStack<float> ContextWidthStackOdinVersion = new GUIScopeStack<float>();
         private static readonly GUIScopeStack<Color> LabelColorStack = new GUIScopeStack<Color>();
+        private static readonly GUIScopeStack<int> LayoutMeasureInfoStack = new GUIScopeStack<int>();
 
+        private static readonly Func<int> GUILayoutEntriesCursorIndexGetter;
+        private static readonly Func<IList> GUILayoutEntriesGetter;
+        private static readonly WeakValueGetter<Rect> GUILayoutEntryRectGetter;
+        private static readonly Type HostViewType;
+        private static readonly Func<object> GUIViewGetter;
+        private static readonly Func<object, EditorWindow> ActualViewGetter;
+        private static readonly Func<Vector2> EditorScreenPointOffsetGetter;
+        private static readonly Func<bool> CurrentWindowHasFocusGetter;
         private static readonly Func<Rect> TopLevelLayoutRectGetter;
         private static readonly Func<float> TopLevelLayoutMinHeightGetter;
         private static readonly Func<float> TopLevelLayoutMaxHeightGetter;
@@ -31,9 +41,24 @@ namespace EasyToolKit.Core.Editor
         private static readonly Func<MessageType, Texture> HelpIconGetter;
         private static int numberOfFramesToRepaint;
         private static float betterContextWidth;
+        private static object prevHostView;
 
         static EasyGUIHelper()
         {
+            HostViewType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.HostView");
+            var guiLayoutEntryType = typeof(GUI).Assembly.GetType("UnityEngine.GUILayoutEntry");
+            var guiViewType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GUIView");
+
+            var weakGUILayoutEntryRectGetter = guiLayoutEntryType.GetField("rect", BindingFlagsHelper.AllInstance).GetInstanceMemberValueGetter(guiLayoutEntryType);
+            GUILayoutEntryRectGetter = (ref object entry) => (Rect)weakGUILayoutEntryRectGetter(ref entry);
+
+            CurrentWindowHasFocusGetter =
+                ReflectionUtility.CreateStaticValueGetter<bool>(guiViewType, "current.hasFocus");
+
+            GUIViewGetter = guiViewType.GetProperty("current", BindingFlagsHelper.AllStatic).GetStaticMemberValueGetter();
+            var weakActualViewGetter = HostViewType.GetProperty("actualView", BindingFlagsHelper.AllInstance).GetInstanceMemberValueGetter(HostViewType);
+            ActualViewGetter = hostView => weakActualViewGetter(ref hostView) as EditorWindow;
+
             TopLevelLayoutGetter =
                 ReflectionUtility.CreateStaticValueGetter<object>(typeof(GUILayoutUtility), "current.topLevel");
             TopLevelLayoutRectGetter =
@@ -42,6 +67,9 @@ namespace EasyToolKit.Core.Editor
                 ReflectionUtility.CreateStaticValueGetter<float>(typeof(GUILayoutUtility), "current.topLevel.minHeight");
             TopLevelLayoutMaxHeightGetter =
                 ReflectionUtility.CreateStaticValueGetter<float>(typeof(GUILayoutUtility), "current.topLevel.maxHeight");
+
+            EditorScreenPointOffsetGetter =
+                ReflectionUtility.CreateStaticValueGetter<Vector2>(typeof(GUIUtility), "s_EditorScreenPointOffset");
 
             ContextWidthGetter = ReflectionUtility.CreateStaticValueGetter<float>(typeof(EditorGUIUtility), "contextWidth");
             FieldInfo field = typeof(EditorGUIUtility).GetField("s_ContextWidth", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
@@ -61,6 +89,64 @@ namespace EasyToolKit.Core.Editor
 
             var layoutType = Type.GetType("UnityEngine.GUILayoutGroup, UnityEngine.IMGUIModule");
             TopLevelLayoutCalcHeightMethod = layoutType.GetMethod("CalcHeight");
+
+            GUILayoutEntriesCursorIndexGetter = ReflectionUtility.CreateStaticValueGetter<int>(typeof(GUILayoutUtility), "current.topLevel.m_Cursor");
+            GUILayoutEntriesGetter = ReflectionUtility.CreateStaticValueGetter<IList>(typeof(GUILayoutUtility), "current.topLevel.entries");
+        }
+
+        /// <summary>
+        /// Gets the current editor window.
+        /// </summary>
+        /// <value>
+        /// The current editor window.
+        /// </value>
+        public static EditorWindow CurrentWindow
+        {
+            get
+            {
+                var view = GUIViewGetter();
+
+                // For some reason this only seems to happen on Mac machines as well.
+                // In rare instances, such as when the user has clicked the eye dropper on a color field,
+                // the current view will not be a type of HostView.
+                // We can only get the current EditorWindow from a HostView, so we'll keep the last HostView
+                // we found, and then use that reference when we don't get a HostView.
+                if (HostViewType.IsAssignableFrom(view.GetType()))
+                {
+                    prevHostView = view;
+                }
+
+                return ActualViewGetter(prevHostView);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the current editor window is focused.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the current window has focus. Otherwise, <c>false</c>.
+        /// </value>
+        public static bool CurrentWindowHasFocus
+        {
+            get
+            {
+                return CurrentWindowHasFocusGetter();
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the mouse screen position.
+        /// </summary>
+        /// <value>
+        /// The mouse screen position.
+        /// </value>
+        public static Vector2 MouseScreenPosition
+        {
+            get
+            {
+                return Event.current.mousePosition + EditorScreenPointOffset;
+            }
         }
 
         /// <summary>
@@ -75,6 +161,17 @@ namespace EasyToolKit.Core.Editor
             {
                 return EditorGUI.indentLevel * 15;
             }
+        }
+
+        /// <summary>
+        /// Gets the editor screen point offset.
+        /// </summary>
+        /// <value>
+        /// The editor screen point offset.
+        /// </value>
+        public static Vector2 EditorScreenPointOffset
+        {
+            get { return EditorScreenPointOffsetGetter(); }
         }
 
         /// <summary>
@@ -142,6 +239,63 @@ namespace EasyToolKit.Core.Editor
         {
             get { return ActualLabelWidthGetter(); }
             set { BetterLabelWidth = value; }
+        }
+        
+
+        /// <summary>
+        /// Begins the layout measuring. Remember to end with <see cref="EndLayoutMeasuring"/>.
+        /// </summary>
+        public static void BeginLayoutMeasuring()
+        {
+            if (Event.current.type != EventType.Layout)
+            {
+                LayoutMeasureInfoStack.Push(GUILayoutEntriesCursorIndexGetter());
+            }
+        }
+
+        /// <summary>
+        /// Ends the layout measuring started by <see cref="BeginLayoutMeasuring"/>
+        /// </summary>
+        /// <returns>The measured rect.</returns>
+        public static Rect EndLayoutMeasuring()
+        {
+            if (Event.current.type != EventType.Layout)
+            {
+                var from = LayoutMeasureInfoStack.Pop();
+                var to = GUILayoutEntriesCursorIndexGetter();
+                IList entries = GUILayoutEntriesGetter();
+
+                from = Mathf.Min(from, entries.Count - 1);
+                to = Mathf.Min(to, entries.Count);
+                if (from >= 0)
+                {
+                    var entry = entries[from];
+                    var rect = GUILayoutEntryRectGetter(ref entry);
+
+                    if (from == to)
+                    {
+                        rect.width = 0;
+                        rect.height = 0;
+                    }
+                    else
+                    {
+                        for (int i = from + 1; i < to; i++)
+                        {
+                            var entry1 = entries[i];
+                            var tmpRect = GUILayoutEntryRectGetter(ref entry1);
+
+                            rect.xMin = Mathf.Min(rect.xMin, tmpRect.xMin);
+                            rect.yMin = Mathf.Min(rect.yMin, tmpRect.yMin);
+                            rect.xMax = Mathf.Max(rect.xMax, tmpRect.xMax);
+                            rect.yMax = Mathf.Max(rect.yMax, tmpRect.yMax);
+                        }
+                    }
+
+                    return rect;
+                }
+            }
+
+            return new Rect(0, 0, 0, 0);
         }
 
         /// <summary>
